@@ -2,9 +2,6 @@
 
 #include "Arduino.h"
 
-// Debug Mode
-#define DEBUG 1
-
 typedef struct _MENU_ITEM
 {
   byte Type;

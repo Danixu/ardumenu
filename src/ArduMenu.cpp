@@ -22,12 +22,22 @@ void ArduMenu::drawMenu() {
     _display.setTextColor(BLACK, WHITE);
     _display.println(text);
     if (_currentMenuItemIdx == 0) {
+      _lines = SCREEN_LINES_TOTAL - 1;
       _itemsOffset++;
       _currentMenuItemIdx = 1;
-      _lines--;
     }
   }
   
+  // This is a bit tricky and maybe will change in the future.
+  // To keep a track of the top menus, the pointer must be saved
+  // somewhere, and the "back" options is where I've choose
+  for (byte i = 0; i < 99; i++) {
+    if (_currentMenuTable[i].Type == AM_ITEM_TYPE_EOM) {
+      _currentMenuTable[i].SubItems = _oldMenuTable;
+      break;
+    }
+  }
+
   // Running through the menu items
   for (byte i = 0; i < _lines; i++) {
     if (_currentMenuTable[i + _itemsOffset].Type != AM_ITEM_TYPE_HEADER) {
@@ -81,7 +91,6 @@ void ArduMenu::down() {
 
 void ArduMenu::up() {
   if (_currentMenuItemIdx != 0 && _currentMenuTable[_currentMenuItemIdx - 1].Type != AM_ITEM_TYPE_HEADER) {
-    Serial.println(_currentMenuItemIdx);
     if (_itemsOffset >= _currentMenuItemIdx) {
       _itemsOffset--;
       _currentMenuItemIdx -= 1;
@@ -123,6 +132,36 @@ void ArduMenu::enter() {
         Serial.println("ERROR: The menu contains no items");
         #endif
       }
+      break;
+    }
+
+    //
+    // The item is a function
+    //
+    case AM_ITEM_TYPE_COMMAND: {
+      (_currentMenuTable[_currentMenuItemIdx].Function)();
+      break;
+    }
+
+    //
+    // The item is a function
+    //
+    case AM_ITEM_TYPE_EOM: {
+      //
+      // If you have set a function for the exit option, execute it.
+      // Usefull if you want to make an action on menu exit
+      //
+      Serial.println(_currentMenuItemIdx);
+      if (_currentMenuTable[_currentMenuItemIdx].Function != NULL) {
+        (_currentMenuTable[_currentMenuItemIdx].Function)();
+      }
+      // Set top menu as current menu and reset variables
+      _currentMenuTable = _currentMenuTable[_currentMenuItemIdx].SubItems;
+      _itemsOffset = 0;
+      _currentMenuItemIdx = 0;
+      // Draw the top menu
+      drawMenu();
+      break;
     }
   }
 }
