@@ -8,18 +8,22 @@ struct MENU_ITEM
   const char *Text;
   void (*Function)(MENU_ITEM *);
   MENU_ITEM *SubItems;
-  int minRange;
-  int maxRange;
+  int rangeMin;
+  int rangeMax;
+  int rangeSteps;
   int (*getRangeStatus)();
+  void (*setRangeStatus)(int);
   int (*getToggleStatus)();
+  void (*setToggleStatus)(int);
 };
 
 // Menu items types definitions
 #define AM_ITEM_TYPE_HEADER 0
 #define AM_ITEM_TYPE_MENU 1
 #define AM_ITEM_TYPE_COMMAND 2
-#define AM_ITEM_TYPE_TOGGLE 3
-#define AM_ITEM_TYPE_EOM 4
+#define AM_ITEM_TYPE_RANGE 3
+#define AM_ITEM_TYPE_TOGGLE 4
+#define AM_ITEM_TYPE_EOM 5
 
 // Screen types and values defintions
 #ifdef _ADAFRUIT_PCD8544_H
@@ -51,6 +55,7 @@ class ArduMenu {
     byte _currentMenuItemIdx;
     byte _itemsOffset;
     byte _lines;
+    bool _inRange;
     MENU_ITEM *_currentMenuTable;
     MENU_ITEM *_oldMenuTable;
     #ifdef _ADAFRUIT_PCD8544_H
