@@ -2,13 +2,17 @@
 
 #include "Arduino.h"
 
-typedef struct _MENU_ITEM
+struct MENU_ITEM
 {
   byte Type;
   const char *Text;
-  void (*Function)();
-  _MENU_ITEM *SubItems;
-} MENU_ITEM;
+  void (*Function)(MENU_ITEM *);
+  MENU_ITEM *SubItems;
+  int minRange;
+  int maxRange;
+  int (*getRangeStatus)();
+  int (*getToggleStatus)();
+};
 
 // Menu items types definitions
 #define AM_ITEM_TYPE_HEADER 0
@@ -54,7 +58,6 @@ class ArduMenu {
     #endif
 
     // Functions
-    byte menuLength(MENU_ITEM *menu);
-    char* centerText(const char *text, unsigned int length);
-    char* centerText(const char *text);
+    char * centerText(const char *text, unsigned int length);
+    char * centerText(const char *text);
 };
