@@ -3,13 +3,54 @@
 
 #ifdef _ADAFRUIT_PCD8544_H
 ArduMenu::ArduMenu(MENU_ITEM *menu, Adafruit_PCD8544 display):
+  inRange(false),
   _currentMenuItemIdx(0),
   _itemsOffset(0),
-  _inRange(false),
   _currentMenuTable(menu),
   _lines(SCREEN_LINES_TOTAL),
-  _display(display) {
-  //nothing to do
+  _display(display)
+{
+  // Calculating message box sizes and position
+  _boxWidth = _display.width() * SCREEN_BOX_AREA;
+  _boxHeight = _display.height() * SCREEN_BOX_AREA;
+  _boxXMargin = (_display.width() - _boxWidth) / 2;
+  _boxYMargin = (_display.height() - _boxHeight) / 2;
+  _boxLines = _boxHeight / SCREEN_LETTER_H;
+  _boxColumns = _boxWidth / SCREEN_LETTER_W;
+  _boxLinesYMargin = _boxYMargin + (_boxHeight - (_boxLines * SCREEN_LETTER_H)) / 2;
+  _boxColumnsXMargin = _boxXMargin + (_boxWidth - (_boxColumns * SCREEN_LETTER_W)) / 2;
+  _haveBox = true;
+
+  // Adjusting size if there's no enough space
+  if ((_boxLinesYMargin - _boxYMargin) < 2)
+  {
+    _boxLines -= 1;
+    _boxLinesYMargin = _boxYMargin + (_boxHeight - (_boxLines * SCREEN_LETTER_H)) / 2;
+  }
+  if ((_boxColumnsXMargin - _boxXMargin) < 2)
+  {
+    _boxColumns -= 1;
+    _boxColumnsXMargin = _boxXMargin + (_boxWidth - (_boxColumns * SCREEN_LETTER_W)) / 2;
+  }
+
+  #ifdef DEBUG
+  Serial.print(F("_boxWidth: "));
+  Serial.println(_boxWidth);
+  Serial.print(F("_boxHeight: "));
+  Serial.println(_boxHeight);
+  Serial.print(F("_boxXMargin: "));
+  Serial.println(_boxXMargin);
+  Serial.print(F("_boxYMargin: "));
+  Serial.println(_boxYMargin);
+  Serial.print(F("_boxLines: "));
+  Serial.println(_boxLines);
+  Serial.print(F("_boxColumns: "));
+  Serial.println(_boxColumns);
+  Serial.print(F("_boxLinesYMargin: "));
+  Serial.println(_boxLinesYMargin);
+  Serial.print(F("_boxColumnsXMargin: "));
+  Serial.println(_boxColumnsXMargin);
+  #endif
 }
 #endif
 
@@ -23,7 +64,7 @@ void ArduMenu::drawMenu()
     auto len = strlen_P(_currentMenuTable[0].Text);
     char txt[len + 1] = {};
     memcpy_P(txt, _currentMenuTable[0].Text, len);
-    char * tmpText = centerText(txt, 12);
+    char * tmpText = _centerText(txt, 12);
     char text[15];
     snprintf_P(text, 15, PSTR("*%s*"), tmpText);
     delete [] tmpText;
@@ -91,12 +132,26 @@ void ArduMenu::drawMenu()
 
 void ArduMenu::down()
 {
-  if (_inRange)
+  ArduMenu::down(NULL, NULL);
+}
+
+void ArduMenu::down(int min, int max)
+{
+  if (inRange)
   {
-    int currentStep = (*_currentMenuTable[_currentMenuItemIdx].getRangeStatus)();
-    (*_currentMenuTable[_currentMenuItemIdx].setRangeStatus)(currentStep + _currentMenuTable[_currentMenuItemIdx].rangeSteps);
+    (*_currentMenuTable[_currentMenuItemIdx].rangeManage)(-1);
+    int currentStep = (*_currentMenuTable[_currentMenuItemIdx].rangeManage)(0);
     Serial.print("Current step: ");
-    Serial.println((*_currentMenuTable[_currentMenuItemIdx].getRangeStatus)());
+    Serial.println(currentStep);
+
+    _setRangeCurrent(currentStep);
+    if (min != max)
+    {
+      int range = max - min;
+      int n = (float)(currentStep - min) / range * _boxColumns;
+      _setRangeMetter(n);
+    }
+    _display.display();
   }
   else
   {
@@ -123,12 +178,25 @@ void ArduMenu::down()
 
 void ArduMenu::up()
 {
-  if (_inRange)
+  ArduMenu::up(NULL, NULL);
+}
+
+void ArduMenu::up(int min, int max)
+{
+  if (inRange)
   {
-    int currentStep = (*_currentMenuTable[_currentMenuItemIdx].getRangeStatus)();
-    (*_currentMenuTable[_currentMenuItemIdx].setRangeStatus)(currentStep + _currentMenuTable[_currentMenuItemIdx].rangeSteps);
+    (*_currentMenuTable[_currentMenuItemIdx].rangeManage)(1);
+    int currentStep = (*_currentMenuTable[_currentMenuItemIdx].rangeManage)(0);
+    _setRangeCurrent(currentStep);
+    if (min != max)
+    {
+      int range = max - min;
+      int n = (float)(currentStep - min) / range * _boxColumns;
+      _setRangeMetter(n);
+    }
+    _display.display();
     Serial.print("Current step: ");
-    Serial.println((*_currentMenuTable[_currentMenuItemIdx].getRangeStatus)());
+    Serial.println(currentStep);
   }
   else
   {
@@ -191,20 +259,40 @@ void ArduMenu::enter()
 
     case AM_ITEM_TYPE_RANGE:
     {
-      if (_currentMenuTable[_currentMenuItemIdx].getRangeStatus != NULL)
+      if (_currentMenuTable[_currentMenuItemIdx].rangeManage != NULL)
       {
-        if (_inRange)
+        if (inRange)
         {
           Serial.println("Exiting range...");
-          _inRange = false;
+          inRange = false;
+          drawMenu();
         }
         else
         {
-          Serial.println("Range item detected...");
-          _inRange = true;
-          int currentStep = (*_currentMenuTable[_currentMenuItemIdx].getRangeStatus)();
+          Serial.println(F("Range item detected..."));
+          inRange = true;
+          int currentStep = (*_currentMenuTable[_currentMenuItemIdx].rangeManage)(0);
+          if (_haveBox){
+            _display.fillRect(_boxXMargin, _boxYMargin, _boxWidth, _boxHeight, WHITE);
+            _display.drawRect(_boxXMargin, _boxYMargin, _boxWidth, _boxHeight, BLACK);
+          }
+
+          if (_boxLines >= 2)
+          {
+            _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin);
+            auto len = strlen_P(_currentMenuTable[_currentMenuItemIdx].Text);
+            char txt[len + 1] = {};
+            memcpy_P(txt, _currentMenuTable[_currentMenuItemIdx].Text, len);
+            char * tmpText = _centerText(txt, _boxColumns);
+            _display.print(tmpText);
+            delete [] tmpText;
+          }
+
+          _setRangeCurrent(currentStep);
+
           Serial.print("Current step: ");
           Serial.println(currentStep);
+          _display.display();
         }
       }
       break;
@@ -249,12 +337,52 @@ void ArduMenu::enter()
   }
 }
 
-char * ArduMenu::centerText(const char *text)
+void ArduMenu::_setRangeCurrent(int num)
 {
-  return centerText(text, SCREEN_COLUMNS + 1);
+  if (_boxLines >= 3){
+    _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin + (SCREEN_LETTER_H * (_boxLines - 2)));
+    _display.print(_centerText(num, _boxColumns));
+  }
+  else
+  {
+    _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin + (SCREEN_LETTER_H * (_boxLines - 1)));
+    _display.print(_centerText(num, _boxColumns));
+  }
 }
 
-char * ArduMenu::centerText(const char *text, unsigned int length)
+void ArduMenu::_setRangeMetter(int num)
+{
+  if (_boxLines >= 3){
+    _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin + (SCREEN_LETTER_H * (_boxLines - 1)));
+    for (int i = 0; i < num; i++)
+    {
+      _display.write(220);
+    }
+    for (int i = 0; i < (_boxColumns - num); i++)
+    {
+      _display.write(219);
+    }
+  }
+}
+
+char * ArduMenu::_centerText(int num)
+{
+  return _centerText(num, SCREEN_COLUMNS + 1);
+}
+
+char * ArduMenu::_centerText(int num, unsigned int length)
+{
+  char text[7] = "";
+  snprintf_P(text, 7, PSTR("%d"), num);
+  return ArduMenu::_centerText(text, length);
+}
+
+char * ArduMenu::_centerText(const char *text)
+{
+  return _centerText(text, SCREEN_COLUMNS + 1);
+}
+
+char * ArduMenu::_centerText(const char *text, unsigned int length)
 {
   unsigned int N = strlen(text);
   if ( N >= length)
