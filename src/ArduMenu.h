@@ -8,7 +8,7 @@ struct MENU_ITEM
   const char *Text;
   void (*Function)(MENU_ITEM *);
   MENU_ITEM *SubItems;
-  int (*rangeManage)(int);
+  int16_t (*rangeManage)(int8_t);
   bool (*toggleManage)(bool);
 };
 
@@ -45,15 +45,15 @@ class ArduMenu {
     void drawMenu();
     void begin();
     void down();
-    void down(int, int);
+    void down(int16_t, int16_t);
     void up();
-    void up(int, int);
+    void up(int16_t, int16_t);
     void enter();
   
   protected:
     // Protected variables
     uint8_t _currentMenuItemIdx;
-    uint8_t _itemsOffset;
+    int8_t _itemsOffset;
     uint8_t _lines;
     MENU_ITEM *_currentMenuTable;
     MENU_ITEM *_oldMenuTable;
@@ -66,15 +66,19 @@ class ArduMenu {
     uint8_t _boxLinesYMargin;
     uint8_t _boxColumns;
     uint8_t _boxColumnsXMargin;
+    uint8_t _toggleMargin;
+    uint16_t _toggleX;
+    uint8_t _toggleWH;
     #ifdef _ADAFRUIT_PCD8544_H
     Adafruit_PCD8544 _display;
     #endif
 
     // Protected functions
-    char * _centerText(int num);
-    char * _centerText(int num, unsigned int length);
-    char * _centerText(const char *text);
-    char * _centerText(const char *text, unsigned int length);
-    void _setRangeCurrent(int);
-    void _setRangeMetter(int num);
+    char * _centerText(int);
+    char * _centerText(int, uint8_t);
+    char * _centerText(const char *);
+    char * _centerText(const char *, uint8_t);
+    void _setRangeCurrent(uint16_t);
+    void _setRangeMetter(uint8_t);
+    void _reDraw();
 };
