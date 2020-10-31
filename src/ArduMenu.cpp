@@ -1,8 +1,7 @@
 #include "Arduino.h"
 #include "ArduMenu.h"
 
-#ifdef _ADAFRUIT_PCD8544_H
-ArduMenu::ArduMenu(MENU_ITEM *menu, Adafruit_PCD8544 display):
+ArduMenu::ArduMenu(MENU_ITEM *menu, DISPLAY display):
   inRange(false),
   _currentMenuItemIdx(0),
   _itemsOffset(0),
@@ -21,7 +20,7 @@ ArduMenu::ArduMenu(MENU_ITEM *menu, Adafruit_PCD8544 display):
   _boxColumnsXMargin = _boxXMargin + (_boxWidth - (_boxColumns * SCREEN_LETTER_W)) / 2;
   _haveBox = true;
   _toggleMargin = SCREEN_LETTER_W - (SCREEN_LETTER_W * 0.8);
-  _toggleX = _display.width() - (SCREEN_LETTER_W - _toggleMargin);
+  _toggleX = SCREEN_LETTER_W * (SCREEN_COLUMNS - 1) + _toggleMargin;
   _toggleWH = SCREEN_LETTER_W - (_toggleMargin * 2);
 
   // Adjusting size if there's no enough space
@@ -61,11 +60,10 @@ ArduMenu::ArduMenu(MENU_ITEM *menu, Adafruit_PCD8544 display):
   Serial.println(_toggleWH);
   #endif
 }
-#endif
 
 void ArduMenu::drawMenu()
 {
-  _display.clearDisplay();
+  _display.fillScreen(WHITE);
   _display.setCursor(0, 0);
   
   if (_currentMenuTable[0].Type == AM_ITEM_TYPE_HEADER)
@@ -73,9 +71,9 @@ void ArduMenu::drawMenu()
     uint8_t len = strlen_P(_currentMenuTable[0].Text);
     char txt[len + 1] = {};
     memcpy_P(txt, _currentMenuTable[0].Text, len);
-    char * tmpText = _centerText(txt, 12);
-    char text[15];
-    snprintf_P(text, 15, PSTR("*%s*"), tmpText);
+    char * tmpText = _centerText(txt, SCREEN_COLUMNS - 2);
+    char text[SCREEN_COLUMNS + 1];
+    snprintf_P(text, SCREEN_COLUMNS + 1, PSTR("*%s*"), tmpText);
     delete [] tmpText;
     _display.setTextColor(BLACK, WHITE);
     _display.println(text);

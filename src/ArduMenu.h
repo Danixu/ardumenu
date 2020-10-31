@@ -22,6 +22,7 @@ struct MENU_ITEM
 
 // Screen types and values defintions
 #ifdef _ADAFRUIT_PCD8544_H
+#define DISPLAY Adafruit_PCD8544
 #define SCREEN_LINES_BELOW_TEXT 4
 #define SCREEN_LINES_TOTAL 6
 #define SCREEN_COLUMNS 14
@@ -31,12 +32,24 @@ struct MENU_ITEM
 #define SCREEN_BOX_AREA 0.9
 #endif
 
+#ifdef _ADAFRUIT_ST7735H_
+#define DISPLAY Adafruit_ST7735
+#define SCREEN_LINES_BELOW_TEXT 14
+#define SCREEN_LINES_TOTAL 16
+#define SCREEN_COLUMNS 26
+// Those are for avoid calculations
+#define SCREEN_LETTER_W 6
+#define SCREEN_LETTER_H 8
+#define SCREEN_BOX_AREA 0.9
+// Colors
+#define BLACK ST7735_BLACK
+#define WHITE ST7735_WHITE
+#endif
+
 class ArduMenu {
   public:
     // Init function
-    #ifdef _ADAFRUIT_PCD8544_H
-    ArduMenu(MENU_ITEM *menu, Adafruit_PCD8544 display);
-    #endif
+    ArduMenu(MENU_ITEM *menu, DISPLAY display);
 
     // Public variables
     bool inRange;
@@ -69,9 +82,7 @@ class ArduMenu {
     uint8_t _toggleMargin;
     uint16_t _toggleX;
     uint8_t _toggleWH;
-    #ifdef _ADAFRUIT_PCD8544_H
-    Adafruit_PCD8544 _display;
-    #endif
+    DISPLAY _display;
 
     // Protected functions
     char * _centerText(int);
