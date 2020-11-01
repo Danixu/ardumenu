@@ -251,6 +251,11 @@ void ArduMenu::up(int16_t min, int16_t max)
 
 void ArduMenu::enter()
 {
+  ArduMenu::enter(NULL, NULL);
+}
+
+void ArduMenu::enter(int16_t min, int16_t max)
+{
   switch(_currentMenuTable[_currentMenuItemIdx].Type)
   {
     //
@@ -312,6 +317,13 @@ void ArduMenu::enter()
           }
 
           _setRangeCurrent(currentStep);
+
+          if (min != max)
+          {
+            int16_t range = max - min;
+            uint8_t n = (float)(currentStep - min) / range * _boxColumns;
+            _setRangeMetter(n);
+          }
           _reDraw();
         }
       }

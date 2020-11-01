@@ -20,6 +20,8 @@ struct MENU_ITEM
 #define AM_ITEM_TYPE_TOGGLE 4
 #define AM_ITEM_TYPE_EOM 5
 
+// If not defined an user custom display
+#ifndef CUSTOM_DISPLAY
 // Screen types and values defintions
 #ifdef _ADAFRUIT_PCD8544_H
 #define DISPLAY Adafruit_PCD8544
@@ -45,6 +47,8 @@ struct MENU_ITEM
 #define BLACK ST7735_BLACK
 #define WHITE ST7735_WHITE
 #endif
+// End ifndef CUSTOM_DISPLAY
+#endif
 
 class ArduMenu {
   public:
@@ -62,6 +66,7 @@ class ArduMenu {
     void up();
     void up(int16_t, int16_t);
     void enter();
+    void enter(int16_t, int16_t);
   
   protected:
     // Protected variables
