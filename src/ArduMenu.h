@@ -98,3 +98,5 @@ class ArduMenu {
     void _setRangeMetter(uint8_t);
     void _reDraw();
 };
+
+#include "ArduMenu.tcc"
