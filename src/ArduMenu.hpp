@@ -1,6 +1,5 @@
-#include "Arduino.h"
-
-ArduMenu::ArduMenu(MENU_ITEM *menu, DISPLAY display):
+template <class T>
+ArduMenu<T>::ArduMenu(MENU_ITEM *menu, T display):
   inRange(false),
   _currentMenuItemIdx(0),
   _itemsOffset(0),
@@ -63,7 +62,8 @@ ArduMenu::ArduMenu(MENU_ITEM *menu, DISPLAY display):
   #endif
 }
 
-void ArduMenu::drawMenu()
+template <class T>
+void ArduMenu<T>::drawMenu()
 {
   _display.fillScreen(WHITE);
   _display.setCursor(0, 0);
@@ -155,12 +155,14 @@ void ArduMenu::drawMenu()
   _reDraw();
 }
 
-void ArduMenu::down()
+template <class T>
+void ArduMenu<T>::down()
 {
-  ArduMenu::down(NULL, NULL);
+  down(NULL, NULL);
 }
 
-void ArduMenu::down(int16_t min, int16_t max)
+template <class T>
+void ArduMenu<T>::down(int16_t min, int16_t max)
 {
   if (inRange)
   {
@@ -199,12 +201,14 @@ void ArduMenu::down(int16_t min, int16_t max)
   }
 }
 
-void ArduMenu::up()
+template <class T>
+void ArduMenu<T>::up()
 {
-  ArduMenu::up(NULL, NULL);
+  up(NULL, NULL);
 }
 
-void ArduMenu::up(int16_t min, int16_t max)
+template <class T>
+void ArduMenu<T>::up(int16_t min, int16_t max)
 {
   if (inRange)
   {
@@ -251,12 +255,14 @@ void ArduMenu::up(int16_t min, int16_t max)
   } 
 }
 
-void ArduMenu::enter()
+template <class T>
+void ArduMenu<T>::enter()
 {
-  ArduMenu::enter(NULL, NULL);
+  enter(NULL, NULL);
 }
 
-void ArduMenu::enter(int16_t min, int16_t max)
+template <class T>
+void ArduMenu<T>::enter(int16_t min, int16_t max)
 {
   switch(_currentMenuTable[_currentMenuItemIdx].Type)
   {
@@ -395,7 +401,8 @@ void ArduMenu::enter(int16_t min, int16_t max)
   }
 }
 
-void ArduMenu::_setRangeCurrent(uint16_t num)
+template <class T>
+void ArduMenu<T>::_setRangeCurrent(uint16_t num)
 {
   if (_boxLines >= 3){
     _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin + (SCREEN_LETTER_H * (_boxLines - 2)));
@@ -408,7 +415,8 @@ void ArduMenu::_setRangeCurrent(uint16_t num)
   }
 }
 
-void ArduMenu::_setRangeMetter(uint8_t num)
+template <class T>
+void ArduMenu<T>::_setRangeMetter(uint8_t num)
 {
   if (_boxLines >= 3){
     _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin + (SCREEN_LETTER_H * (_boxLines - 1)));
@@ -423,24 +431,28 @@ void ArduMenu::_setRangeMetter(uint8_t num)
   }
 }
 
-char * ArduMenu::_centerText(int num)
+template <class T>
+char * ArduMenu<T>::_centerText(int num)
 {
   return _centerText(num, _screen_columns + 1);
 }
 
-char * ArduMenu::_centerText(int num, uint8_t length)
+template <class T>
+char * ArduMenu<T>::_centerText(int num, uint8_t length)
 {
   char text[7] = "";
   snprintf_P(text, 7, PSTR("%d"), num);
-  return ArduMenu::_centerText(text, length);
+  return ArduMenu<T>::_centerText(text, length);
 }
 
-char * ArduMenu::_centerText(const char *text)
+template <class T>
+char * ArduMenu<T>::_centerText(const char *text)
 {
   return _centerText(text, _screen_columns + 1);
 }
 
-char * ArduMenu::_centerText(const char *text, uint8_t length)
+template <class T>
+char * ArduMenu<T>::_centerText(const char *text, uint8_t length)
 {
   uint8_t N = strlen(text);
   if ( N >= length)
@@ -462,7 +474,8 @@ char * ArduMenu::_centerText(const char *text, uint8_t length)
   }
 }
 
-void ArduMenu::_reDraw()
+template <class T>
+void ArduMenu<T>::_reDraw()
 {
   // This function just redraw the screen depending if is necessary
   #ifdef _ADAFRUIT_PCD8544_H

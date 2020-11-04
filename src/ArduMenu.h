@@ -33,24 +33,11 @@ struct MENU_ITEM
 #define WHITE 0xFFFF
 #endif
 
-// If not defined an user custom display
-#ifndef CUSTOM_DISPLAY
-// Screen types and values defintions
-#ifdef _ADAFRUIT_PCD8544_H
-#define DISPLAY Adafruit_PCD8544
-// Those are for avoid calculations
-#endif
-
-#ifdef _ADAFRUIT_ST7735H_
-#define DISPLAY Adafruit_ST7735
-#endif
-// End ifndef CUSTOM_DISPLAY
-#endif
-
+template <class T>
 class ArduMenu {
   public:
     // Init function
-    ArduMenu(MENU_ITEM *menu, DISPLAY display);
+    ArduMenu(MENU_ITEM *menu, T display);
 
     // Public variables
     bool inRange;
@@ -87,7 +74,7 @@ class ArduMenu {
     uint8_t _screen_columns;
     uint8_t _screen_lines;
     uint8_t _screen_lines_below_text;
-    DISPLAY _display;
+    T _display;
 
     // Protected functions
     char * _centerText(int);
@@ -99,4 +86,4 @@ class ArduMenu {
     void _reDraw();
 };
 
-#include "ArduMenu.tcc"
+#include "ArduMenu.hpp"
