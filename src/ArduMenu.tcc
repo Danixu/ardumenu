@@ -1,14 +1,16 @@
 #include "Arduino.h"
-#include "ArduMenu.h"
 
 ArduMenu::ArduMenu(MENU_ITEM *menu, DISPLAY display):
   inRange(false),
   _currentMenuItemIdx(0),
   _itemsOffset(0),
   _currentMenuTable(menu),
-  _lines(SCREEN_LINES_TOTAL),
   _display(display)
 {
+  // Calculatin screen lines and columns
+  _screen_lines = _display.height() / SCREEN_LETTER_H;
+  _screen_columns = _display.width() / SCREEN_LETTER_W;
+
   // Calculating message box sizes and position
   _boxWidth = _display.width() * SCREEN_BOX_AREA;
   _boxHeight = _display.height() * SCREEN_BOX_AREA;
@@ -20,7 +22,7 @@ ArduMenu::ArduMenu(MENU_ITEM *menu, DISPLAY display):
   _boxColumnsXMargin = _boxXMargin + (_boxWidth - (_boxColumns * SCREEN_LETTER_W)) / 2;
   _haveBox = true;
   _toggleMargin = SCREEN_LETTER_W - (SCREEN_LETTER_W * 0.8);
-  _toggleX = SCREEN_LETTER_W * (SCREEN_COLUMNS - 1) + _toggleMargin;
+  _toggleX = SCREEN_LETTER_W * (_screen_columns - 1) + _toggleMargin;
   _toggleWH = SCREEN_LETTER_W - (_toggleMargin * 2);
 
   // Adjusting size if there's no enough space
@@ -71,15 +73,15 @@ void ArduMenu::drawMenu()
     uint8_t len = strlen_P(_currentMenuTable[0].Text);
     char txt[len + 1] = {};
     memcpy_P(txt, _currentMenuTable[0].Text, len);
-    char * tmpText = _centerText(txt, SCREEN_COLUMNS - 2);
-    char text[SCREEN_COLUMNS + 1];
-    snprintf_P(text, SCREEN_COLUMNS + 1, PSTR("*%s*"), tmpText);
+    char * tmpText = _centerText(txt, _screen_columns - 2);
+    char text[_screen_columns + 1];
+    snprintf_P(text, _screen_columns + 1, PSTR("*%s*"), tmpText);
     delete [] tmpText;
     _display.setTextColor(BLACK, WHITE);
     _display.println(text);
     if (_currentMenuItemIdx == 0)
     {
-      _lines = SCREEN_LINES_TOTAL - 1;
+      _lines = _screen_lines - 1;
       _itemsOffset++;
       _currentMenuItemIdx = 1;
     }
@@ -103,14 +105,14 @@ void ArduMenu::drawMenu()
     if (_currentMenuTable[i + _itemsOffset].Type != AM_ITEM_TYPE_HEADER)
     {
       _display.setTextColor(BLACK, WHITE);
-      char text[SCREEN_COLUMNS + 1];
+      char text[_screen_columns + 1];
       char format[14];
       
-      snprintf_P(format, 14, PSTR(" %%-%d.%ds "), SCREEN_COLUMNS - 3, SCREEN_COLUMNS - 3);
+      snprintf_P(format, 14, PSTR(" %%-%d.%ds "), _screen_columns - 3, _screen_columns - 3);
       uint8_t len = strlen_P(_currentMenuTable[i + _itemsOffset].Text);
       char txt[len+1] = {};
       memcpy_P(txt, _currentMenuTable[i + _itemsOffset].Text, len);
-      snprintf(text, SCREEN_COLUMNS + 1, format, txt);
+      snprintf(text, _screen_columns + 1, format, txt);
       _display.print(text);
       if (_currentMenuTable[i + _itemsOffset].Type == AM_ITEM_TYPE_MENU)
       {  
@@ -423,7 +425,7 @@ void ArduMenu::_setRangeMetter(uint8_t num)
 
 char * ArduMenu::_centerText(int num)
 {
-  return _centerText(num, SCREEN_COLUMNS + 1);
+  return _centerText(num, _screen_columns + 1);
 }
 
 char * ArduMenu::_centerText(int num, uint8_t length)
@@ -435,7 +437,7 @@ char * ArduMenu::_centerText(int num, uint8_t length)
 
 char * ArduMenu::_centerText(const char *text)
 {
-  return _centerText(text, SCREEN_COLUMNS + 1);
+  return _centerText(text, _screen_columns + 1);
 }
 
 char * ArduMenu::_centerText(const char *text, uint8_t length)

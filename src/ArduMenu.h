@@ -20,32 +20,29 @@ struct MENU_ITEM
 #define AM_ITEM_TYPE_TOGGLE 4
 #define AM_ITEM_TYPE_EOM 5
 
+// Letters size and box area
+#define SCREEN_LETTER_W 6
+#define SCREEN_LETTER_H 8
+#define SCREEN_BOX_AREA 0.9
+
+// If colors are not defined
+#ifndef BLACK
+#define BLACK 0x0000
+#endif
+#ifndef WHITE
+#define WHITE 0xFFFF
+#endif
+
 // If not defined an user custom display
 #ifndef CUSTOM_DISPLAY
 // Screen types and values defintions
 #ifdef _ADAFRUIT_PCD8544_H
 #define DISPLAY Adafruit_PCD8544
-#define SCREEN_LINES_BELOW_TEXT 4
-#define SCREEN_LINES_TOTAL 6
-#define SCREEN_COLUMNS 14
 // Those are for avoid calculations
-#define SCREEN_LETTER_W 6
-#define SCREEN_LETTER_H 8
-#define SCREEN_BOX_AREA 0.9
 #endif
 
 #ifdef _ADAFRUIT_ST7735H_
 #define DISPLAY Adafruit_ST7735
-#define SCREEN_LINES_BELOW_TEXT 14
-#define SCREEN_LINES_TOTAL 16
-#define SCREEN_COLUMNS 26
-// Those are for avoid calculations
-#define SCREEN_LETTER_W 6
-#define SCREEN_LETTER_H 8
-#define SCREEN_BOX_AREA 0.9
-// Colors
-#define BLACK ST7735_BLACK
-#define WHITE ST7735_WHITE
 #endif
 // End ifndef CUSTOM_DISPLAY
 #endif
@@ -87,6 +84,9 @@ class ArduMenu {
     uint8_t _toggleMargin;
     uint16_t _toggleX;
     uint8_t _toggleWH;
+    uint8_t _screen_columns;
+    uint8_t _screen_lines;
+    uint8_t _screen_lines_below_text;
     DISPLAY _display;
 
     // Protected functions
