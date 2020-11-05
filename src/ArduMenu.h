@@ -51,6 +51,7 @@ class ArduMenu {
     void up(int16_t, int16_t);
     void enter();
     void enter(int16_t, int16_t);
+    void setTextSize(uint8_t);
   
   protected:
     // Protected variables
@@ -71,6 +72,9 @@ class ArduMenu {
     uint8_t _toggleMargin;
     uint16_t _toggleX;
     uint8_t _toggleWH;
+    uint8_t _textSize;
+    uint8_t _letterW;
+    uint8_t _letterH;
     uint8_t _screen_columns;
     uint8_t _screen_lines;
     uint8_t _screen_lines_below_text;

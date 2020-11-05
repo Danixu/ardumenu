@@ -3,38 +3,17 @@ ArduMenu<T>::ArduMenu(MENU_ITEM *menu, T display):
   inRange(false),
   _currentMenuItemIdx(0),
   _itemsOffset(0),
+  _textSize(1),
   _currentMenuTable(menu),
   _display(display)
 {
-  // Calculatin screen lines and columns
-  _screen_lines = _display.height() / SCREEN_LETTER_H;
-  _screen_columns = _display.width() / SCREEN_LETTER_W;
+  setTextSize(_textSize);
 
   // Calculating message box sizes and position
   _boxWidth = _display.width() * SCREEN_BOX_AREA;
   _boxHeight = _display.height() * SCREEN_BOX_AREA;
   _boxXMargin = (_display.width() - _boxWidth) / 2;
   _boxYMargin = (_display.height() - _boxHeight) / 2;
-  _boxLines = _boxHeight / SCREEN_LETTER_H;
-  _boxColumns = _boxWidth / SCREEN_LETTER_W;
-  _boxLinesYMargin = _boxYMargin + (_boxHeight - (_boxLines * SCREEN_LETTER_H)) / 2;
-  _boxColumnsXMargin = _boxXMargin + (_boxWidth - (_boxColumns * SCREEN_LETTER_W)) / 2;
-  _haveBox = true;
-  _toggleMargin = SCREEN_LETTER_W - (SCREEN_LETTER_W * 0.8);
-  _toggleX = SCREEN_LETTER_W * (_screen_columns - 1) + _toggleMargin;
-  _toggleWH = SCREEN_LETTER_W - (_toggleMargin * 2);
-
-  // Adjusting size if there's no enough space
-  if ((_boxLinesYMargin - _boxYMargin) < 2)
-  {
-    _boxLines -= 1;
-    _boxLinesYMargin = _boxYMargin + (_boxHeight - (_boxLines * SCREEN_LETTER_H)) / 2;
-  }
-  if ((_boxColumnsXMargin - _boxXMargin) < 2)
-  {
-    _boxColumns -= 1;
-    _boxColumnsXMargin = _boxXMargin + (_boxWidth - (_boxColumns * SCREEN_LETTER_W)) / 2;
-  }
 
   #ifdef DEBUG
   Serial.print(F("_boxWidth: "));
@@ -45,6 +24,41 @@ ArduMenu<T>::ArduMenu(MENU_ITEM *menu, T display):
   Serial.println(_boxXMargin);
   Serial.print(F("_boxYMargin: "));
   Serial.println(_boxYMargin);
+  #endif
+}
+
+template <class T>
+void ArduMenu<T>::setTextSize(uint8_t size)
+{
+  _textSize = size;
+  _letterW = SCREEN_LETTER_W * (1 << size - 1);
+  _letterH = SCREEN_LETTER_H * (1 << size - 1);
+  // Calculatin screen lines and columns
+  _screen_lines = _display.height() / _letterH;
+  _screen_columns = _display.width() / _letterW;
+
+  // Calculating message box sizes and position
+  _boxLines = _boxHeight / _letterH;
+  _boxColumns = _boxWidth / _letterW;
+  _boxLinesYMargin = _boxYMargin + (_boxHeight - (_boxLines * _letterH)) / 2;
+  _boxColumnsXMargin = _boxXMargin + (_boxWidth - (_boxColumns * _letterW)) / 2;
+  _toggleMargin = _letterW - (_letterW * 0.8);
+  _toggleX = _letterW * (_screen_columns - 1) + _toggleMargin;
+  _toggleWH = _letterW  - (_toggleMargin * 2);
+
+  // Adjusting size if there's no enough space
+  if ((_boxLinesYMargin - _boxYMargin) < 2)
+  {
+    _boxLines -= 1;
+    _boxLinesYMargin = _boxYMargin + (_boxHeight - (_boxLines * _letterH)) / 2;
+  }
+  if ((_boxColumnsXMargin - _boxXMargin) < 2)
+  {
+    _boxColumns -= 1;
+    _boxColumnsXMargin = _boxXMargin + (_boxWidth - (_boxColumns * _letterW)) / 2;
+  }
+
+  #ifdef DEBUG
   Serial.print(F("_boxLines: "));
   Serial.println(_boxLines);
   Serial.print(F("_boxColumns: "));
@@ -67,6 +81,7 @@ void ArduMenu<T>::drawMenu()
 {
   _display.fillScreen(WHITE);
   _display.setCursor(0, 0);
+  _display.setTextSize(_textSize);
   
   if (_currentMenuTable[0].Type == AM_ITEM_TYPE_HEADER)
   {
@@ -120,7 +135,7 @@ void ArduMenu<T>::drawMenu()
       }
       else if (_currentMenuTable[i + _itemsOffset].Type == AM_ITEM_TYPE_TOGGLE)
       {
-        uint16_t y = _display.getCursorY() + (SCREEN_LETTER_H - SCREEN_LETTER_W) + _toggleMargin;
+        uint16_t y = _display.getCursorY() + (_letterH - _letterW) + _toggleMargin;
         #ifdef DEBUG
         Serial.print(F("Line Y: "));
         Serial.println(y);
@@ -145,11 +160,11 @@ void ArduMenu<T>::drawMenu()
   // Setting selector to selected item
   if (_currentMenuItemIdx > _lines)
   {
-    _display.setCursor(0, SCREEN_LETTER_H * _lines);
+    _display.setCursor(0, _letterH * _lines);
   }
   else
   {
-    _display.setCursor(0, SCREEN_LETTER_H * _currentMenuItemIdx);
+    _display.setCursor(0, _letterH * _currentMenuItemIdx);
   }
   _display.write(16);
   _reDraw();
@@ -190,10 +205,10 @@ void ArduMenu<T>::down(int16_t min, int16_t max)
       }
       else
       {
-        _display.setCursor(0, SCREEN_LETTER_H * _currentMenuItemIdx);
+        _display.setCursor(0, _letterH * _currentMenuItemIdx);
         _display.print(F(" "));
         _currentMenuItemIdx += 1;
-        _display.setCursor(0, SCREEN_LETTER_H * _currentMenuItemIdx);
+        _display.setCursor(0, _letterH * _currentMenuItemIdx);
         _display.write(16);
         _reDraw();
       }
@@ -238,15 +253,15 @@ void ArduMenu<T>::up(int16_t min, int16_t max)
         _currentMenuItemIdx -= 1;
         if (_currentMenuTable[0].Type == AM_ITEM_TYPE_HEADER)
         {
-          _display.setCursor(0, SCREEN_LETTER_H * (_currentMenuItemIdx + 2 - _itemsOffset));
+          _display.setCursor(0, _letterH * (_currentMenuItemIdx + 2 - _itemsOffset));
           _display.print(F(" "));
-          _display.setCursor(0, SCREEN_LETTER_H * (_currentMenuItemIdx + 1 - _itemsOffset));
+          _display.setCursor(0, _letterH * (_currentMenuItemIdx + 1 - _itemsOffset));
         }
         else
         {
-          _display.setCursor(0, SCREEN_LETTER_H * (_currentMenuItemIdx + 1 - _itemsOffset));
+          _display.setCursor(0, _letterH * (_currentMenuItemIdx + 1 - _itemsOffset));
           _display.print(F(" "));
-          _display.setCursor(0, SCREEN_LETTER_H * (_currentMenuItemIdx - _itemsOffset));
+          _display.setCursor(0, _letterH * (_currentMenuItemIdx - _itemsOffset));
         }
         _display.write(16);
         _reDraw();
@@ -339,7 +354,7 @@ void ArduMenu<T>::enter(int16_t min, int16_t max)
 
       case AM_ITEM_TYPE_TOGGLE:
       {
-        uint16_t y = SCREEN_LETTER_H * _currentMenuItemIdx;
+        uint16_t y = _letterH * _currentMenuItemIdx;
         #ifdef DEBUG
         Serial.print(F("Line Y: "));
         Serial.println(y);
@@ -347,13 +362,13 @@ void ArduMenu<T>::enter(int16_t min, int16_t max)
 
         if ((*_currentMenuTable[_currentMenuItemIdx].toggleManage)(true))
         {
-          _display.fillRoundRect(_toggleX, y + (SCREEN_LETTER_H - SCREEN_LETTER_W) + _toggleMargin, _toggleWH, _toggleWH, 1, BLACK);
+          _display.fillRoundRect(_toggleX, y + (_letterH - _letterW) + _toggleMargin, _toggleWH, _toggleWH, 1, BLACK);
         }
         else
         {
           _display.setCursor(_toggleX - _toggleMargin, y);
           _display.print(F(" "));
-          _display.drawRoundRect(_toggleX, y + (SCREEN_LETTER_H - SCREEN_LETTER_W) + _toggleMargin, _toggleWH, _toggleWH, 1, BLACK);
+          _display.drawRoundRect(_toggleX, y + (_letterH - _letterW) + _toggleMargin, _toggleWH, _toggleWH, 1, BLACK);
         }
         _reDraw();
       }
@@ -405,12 +420,12 @@ template <class T>
 void ArduMenu<T>::_setRangeCurrent(uint16_t num)
 {
   if (_boxLines >= 3){
-    _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin + (SCREEN_LETTER_H * (_boxLines - 2)));
+    _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin + (_letterH * (_boxLines - 2)));
     _display.print(_centerText(num, _boxColumns));
   }
   else
   {
-    _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin + (SCREEN_LETTER_H * (_boxLines - 1)));
+    _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin + (_letterH * (_boxLines - 1)));
     _display.print(_centerText(num, _boxColumns));
   }
 }
@@ -419,7 +434,7 @@ template <class T>
 void ArduMenu<T>::_setRangeMetter(uint8_t num)
 {
   if (_boxLines >= 3){
-    _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin + (SCREEN_LETTER_H * (_boxLines - 1)));
+    _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin + (_letterH * (_boxLines - 1)));
     for (int i = 0; i < num; i++)
     {
       _display.write(220);
