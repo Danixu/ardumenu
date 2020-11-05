@@ -115,7 +115,7 @@ void ArduMenu<T>::drawMenu()
   }
 
   // Running through the menu items
-  for (byte i = 0; i < _lines; i++)
+  for (uint8_t i = 0; i < _lines; i++)
   {
     if (_currentMenuTable[i + _itemsOffset].Type != AM_ITEM_TYPE_HEADER)
     {
@@ -158,9 +158,15 @@ void ArduMenu<T>::drawMenu()
     }
   }
   // Setting selector to selected item
-  if (_currentMenuItemIdx > _lines)
-  {
-    _display.setCursor(0, _letterH * _lines);
+  if (_itemsOffset > 0){
+    if (_currentMenuTable[0].Type == AM_ITEM_TYPE_HEADER)
+    {
+      _display.setCursor(0, _letterH * (_currentMenuItemIdx + 1 - _itemsOffset));
+    }
+    else
+    {
+      _display.setCursor(0, _letterH * (_currentMenuItemIdx - _itemsOffset));
+    }
   }
   else
   {
@@ -245,12 +251,12 @@ void ArduMenu<T>::up(int16_t min, int16_t max)
       if (_itemsOffset >= _currentMenuItemIdx)
       {
         _itemsOffset--;
-        _currentMenuItemIdx -= 1;
+        _currentMenuItemIdx--;
         drawMenu();
       }
       else
       {
-        _currentMenuItemIdx -= 1;
+        _currentMenuItemIdx--;
         if (_currentMenuTable[0].Type == AM_ITEM_TYPE_HEADER)
         {
           _display.setCursor(0, _letterH * (_currentMenuItemIdx + 2 - _itemsOffset));
