@@ -4,27 +4,12 @@ ArduMenu<T>::ArduMenu(MENU_ITEM *menu, T display):
   _currentMenuItemIdx(0),
   _itemsOffset(0),
   _textSize(1),
+  _hasBox(true),
   _currentMenuTable(menu),
   _display(display)
 {
   setTextSize(_textSize);
-
-  // Calculating message box sizes and position
-  _boxWidth = _display.width() * SCREEN_BOX_AREA;
-  _boxHeight = _display.height() * SCREEN_BOX_AREA;
-  _boxXMargin = (_display.width() - _boxWidth) / 2;
-  _boxYMargin = (_display.height() - _boxHeight) / 2;
-
-  #ifdef DEBUG
-  Serial.print(F("_boxWidth: "));
-  Serial.println(_boxWidth);
-  Serial.print(F("_boxHeight: "));
-  Serial.println(_boxHeight);
-  Serial.print(F("_boxXMargin: "));
-  Serial.println(_boxXMargin);
-  Serial.print(F("_boxYMargin: "));
-  Serial.println(_boxYMargin);
-  #endif
+  _setBoxSize();
 }
 
 template <class T>
@@ -77,9 +62,48 @@ void ArduMenu<T>::setTextSize(uint8_t size)
 }
 
 template <class T>
+void ArduMenu<T>::_setBoxSize()
+{
+  // Calculating message box sizes and position
+  if (_hasBox)
+  {
+    _boxWidth = _display.width() * SCREEN_BOX_AREA;
+    _boxHeight = _display.height() * SCREEN_BOX_AREA;
+    _boxXMargin = (_display.width() - _boxWidth) / 2;
+    _boxYMargin = (_display.height() - _boxHeight) / 2;
+  }
+  else
+  {
+    _boxWidth = _display.width();
+    _boxHeight = _display.height();
+    _boxXMargin = 0;
+    _boxYMargin = 0;
+  }
+  
+
+  #ifdef DEBUG
+  Serial.print(F("_boxWidth: "));
+  Serial.println(_boxWidth);
+  Serial.print(F("_boxHeight: "));
+  Serial.println(_boxHeight);
+  Serial.print(F("_boxXMargin: "));
+  Serial.println(_boxXMargin);
+  Serial.print(F("_boxYMargin: "));
+  Serial.println(_boxYMargin);
+  #endif
+}
+
+template <class T>
+void ArduMenu<T>::_textBox(bool hasbox)
+{
+  _hasBox = hasbox;
+  _setBoxSize();
+}
+
+template <class T>
 void ArduMenu<T>::drawMenu()
 {
-  _display.fillScreen(WHITE);
+  _cleanUp();
   _display.setCursor(0, 0);
   _display.setTextSize(_textSize);
   
@@ -329,9 +353,13 @@ void ArduMenu<T>::enter(int16_t min, int16_t max)
           #endif
           inRange = true;
           uint16_t currentStep = (*_currentMenuTable[_currentMenuItemIdx].rangeManage)(0);
-          if (_haveBox){
+          if (_hasBox){
             _display.fillRect(_boxXMargin, _boxYMargin, _boxWidth, _boxHeight, WHITE);
             _display.drawRect(_boxXMargin, _boxYMargin, _boxWidth, _boxHeight, BLACK);
+          }
+          else
+          {
+            _cleanUp();
           }
 
           if (_boxLines >= 2)
@@ -426,7 +454,7 @@ template <class T>
 void ArduMenu<T>::_setRangeCurrent(uint16_t num)
 {
   if (_boxLines >= 3){
-    _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin + (_letterH * (_boxLines - 2)));
+    _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin + (_letterH * (_boxLines / 2)));
     _display.print(_centerText(num, _boxColumns));
   }
   else
@@ -440,7 +468,7 @@ template <class T>
 void ArduMenu<T>::_setRangeMetter(uint8_t num)
 {
   if (_boxLines >= 3){
-    _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin + (_letterH * (_boxLines - 1)));
+    _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin + (_letterH * (_boxLines / 2 + 1)));
     for (int i = 0; i < num; i++)
     {
       _display.write(220);
@@ -501,5 +529,16 @@ void ArduMenu<T>::_reDraw()
   // This function just redraw the screen depending if is necessary
   #ifdef _ADAFRUIT_PCD8544_H
   _display.display();
+  #endif
+}
+
+template <class T>
+void ArduMenu<T>::_cleanUp()
+{
+  #ifdef _ADAFRUIT_PCD8544_H
+  _display.clearDisplay();
+  #endif
+  #ifdef _ADAFRUIT_ST7735H_
+  _display.fillScreen(WHITE);
   #endif
 }

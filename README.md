@@ -17,7 +17,7 @@ With this library you'll be able to create simple menus with sub-menus. Every it
 
 ## ToDo
 * Test more displays
-* Configurable letter size
-* Vertically Centered text on Range Box
+* ~~Configurable letter size~~
+* ~~Vertically Centered text on Range Box~~
 * Different selection modes (icon, inverted...)
 * Configurable colours for tft displays

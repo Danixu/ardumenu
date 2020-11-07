@@ -60,7 +60,7 @@ class ArduMenu {
     uint8_t _lines;
     MENU_ITEM *_currentMenuTable;
     MENU_ITEM *_oldMenuTable;
-    bool _haveBox;
+    bool _hasBox;
     uint8_t _boxWidth;
     uint8_t _boxHeight;
     uint8_t _boxXMargin;
@@ -85,8 +85,11 @@ class ArduMenu {
     char * _centerText(int, uint8_t);
     char * _centerText(const char *);
     char * _centerText(const char *, uint8_t);
+    void _cleanUp();
+    void _textBox(bool);
     void _setRangeCurrent(uint16_t);
     void _setRangeMetter(uint8_t);
+    void _setBoxSize();
     void _reDraw();
 };
 
