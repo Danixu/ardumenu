@@ -5,6 +5,8 @@ ArduMenu<T>::ArduMenu(MENU_ITEM *menu, T display):
   _itemsOffset(0),
   _textSize(1),
   _hasBox(true),
+  _selectionMode(AM_SELECTION_MODE_ICON),
+  _selectionIcon(16),
   _currentMenuTable(menu),
   _display(display)
 {
@@ -62,42 +64,28 @@ void ArduMenu<T>::setTextSize(uint8_t size)
 }
 
 template <class T>
-void ArduMenu<T>::_setBoxSize()
+void ArduMenu<T>::setSelectionMode(uint8_t sMode)
 {
-  // Calculating message box sizes and position
-  if (_hasBox)
-  {
-    _boxWidth = _display.width() * SCREEN_BOX_AREA;
-    _boxHeight = _display.height() * SCREEN_BOX_AREA;
-    _boxXMargin = (_display.width() - _boxWidth) / 2;
-    _boxYMargin = (_display.height() - _boxHeight) / 2;
-  }
-  else
-  {
-    _boxWidth = _display.width();
-    _boxHeight = _display.height();
-    _boxXMargin = 0;
-    _boxYMargin = 0;
-  }
-  
-
-  #ifdef DEBUG
-  Serial.print(F("_boxWidth: "));
-  Serial.println(_boxWidth);
-  Serial.print(F("_boxHeight: "));
-  Serial.println(_boxHeight);
-  Serial.print(F("_boxXMargin: "));
-  Serial.println(_boxXMargin);
-  Serial.print(F("_boxYMargin: "));
-  Serial.println(_boxYMargin);
-  #endif
+  setSelectionMode(sMode, _selectionIcon);
 }
 
 template <class T>
-void ArduMenu<T>::_textBox(bool hasbox)
+void ArduMenu<T>::setSelectionMode(uint8_t sMode, char icon)
 {
-  _hasBox = hasbox;
-  _setBoxSize();
+  _selectionMode = sMode;
+  if (_selectionMode == AM_SELECTION_MODE_ICON)
+  {
+    _selectionIcon = icon;
+  }
+  else if (sMode == AM_SELECTION_MODE_INVERTED)
+  {
+    // Nothing to do
+  }
+  
+  if (!inRange)
+  {
+    drawMenu();
+  }
 }
 
 template <class T>
@@ -125,6 +113,11 @@ void ArduMenu<T>::drawMenu()
       _currentMenuItemIdx = 1;
     }
   }
+  else
+  {
+    _lines = _screen_lines;
+  }
+  
   
   // This is a bit tricky and maybe will change in the future.
   // To keep a track of the top menus, the pointer must be saved
@@ -143,37 +136,9 @@ void ArduMenu<T>::drawMenu()
   {
     if (_currentMenuTable[i + _itemsOffset].Type != AM_ITEM_TYPE_HEADER)
     {
-      _display.setTextColor(BLACK, WHITE);
-      char text[_screen_columns + 1];
-      char format[14];
-      
-      snprintf_P(format, 14, PSTR(" %%-%d.%ds "), _screen_columns - 3, _screen_columns - 3);
-      uint8_t len = strlen_P(_currentMenuTable[i + _itemsOffset].Text);
-      char txt[len+1] = {};
-      memcpy_P(txt, _currentMenuTable[i + _itemsOffset].Text, len);
-      snprintf(text, _screen_columns + 1, format, txt);
-      _display.print(text);
-      if (_currentMenuTable[i + _itemsOffset].Type == AM_ITEM_TYPE_MENU)
-      {  
-        _display.write(175);
-      }
-      else if (_currentMenuTable[i + _itemsOffset].Type == AM_ITEM_TYPE_TOGGLE)
-      {
-        uint16_t y = _display.getCursorY() + (_letterH - _letterW) + _toggleMargin;
-        #ifdef DEBUG
-        Serial.print(F("Line Y: "));
-        Serial.println(y);
-        #endif
-        if ((*_currentMenuTable[i + _itemsOffset].toggleManage)(false))
-        {
-          _display.fillRoundRect(_toggleX, y, _toggleWH, _toggleWH, 1, BLACK);
-        }
-        else
-        {
-          _display.drawRoundRect(_toggleX, y, _toggleWH, _toggleWH, 1, BLACK);
-        }
-      }
-      _display.println();
+      Serial.print("Printing item: ");
+      Serial.println(i);
+      _drawMenuItem(i);
 
       if (_currentMenuTable[i + _itemsOffset].Type == AM_ITEM_TYPE_EOM)
       {
@@ -181,22 +146,7 @@ void ArduMenu<T>::drawMenu()
       }
     }
   }
-  // Setting selector to selected item
-  if (_itemsOffset > 0){
-    if (_currentMenuTable[0].Type == AM_ITEM_TYPE_HEADER)
-    {
-      _display.setCursor(0, _letterH * (_currentMenuItemIdx + 1 - _itemsOffset));
-    }
-    else
-    {
-      _display.setCursor(0, _letterH * (_currentMenuItemIdx - _itemsOffset));
-    }
-  }
-  else
-  {
-    _display.setCursor(0, _letterH * _currentMenuItemIdx);
-  }
-  _display.write(16);
+
   _reDraw();
 }
 
@@ -227,19 +177,27 @@ void ArduMenu<T>::down(int16_t min, int16_t max)
   {
     if (_currentMenuTable[_currentMenuItemIdx].Type != AM_ITEM_TYPE_EOM)
     {
-      if ((_currentMenuItemIdx - _itemsOffset) >= (_lines - 1))
+      _currentMenuItemIdx++;
+      if ((_currentMenuItemIdx - _itemsOffset) >= _lines)
       {
         _itemsOffset++;
-        _currentMenuItemIdx += 1;
         drawMenu();
       }
       else
       {
-        _display.setCursor(0, _letterH * _currentMenuItemIdx);
-        _display.print(F(" "));
-        _currentMenuItemIdx += 1;
-        _display.setCursor(0, _letterH * _currentMenuItemIdx);
-        _display.write(16);
+        if (_currentMenuTable[0].Type == AM_ITEM_TYPE_HEADER)
+        {
+          _display.setCursor(0, _letterH * (_currentMenuItemIdx - _itemsOffset));
+          _drawMenuItem(_currentMenuItemIdx - _itemsOffset - 1);
+          _drawMenuItem(_currentMenuItemIdx - _itemsOffset);
+        }
+        else
+        {
+          _display.setCursor(0, _letterH * (_currentMenuItemIdx - _itemsOffset - 1));
+          _drawMenuItem(_currentMenuItemIdx - _itemsOffset - 1);
+          _drawMenuItem(_currentMenuItemIdx - _itemsOffset);
+        }
+
         _reDraw();
       }
     }
@@ -272,28 +230,27 @@ void ArduMenu<T>::up(int16_t min, int16_t max)
   {
     if (_currentMenuItemIdx != 0 && _currentMenuTable[_currentMenuItemIdx - 1].Type != AM_ITEM_TYPE_HEADER)
     {
-      if (_itemsOffset >= _currentMenuItemIdx)
+      _currentMenuItemIdx--;
+      if (_itemsOffset > _currentMenuItemIdx)
       {
         _itemsOffset--;
-        _currentMenuItemIdx--;
         drawMenu();
       }
       else
       {
-        _currentMenuItemIdx--;
-        if (_currentMenuTable[0].Type == AM_ITEM_TYPE_HEADER)
+         if (_currentMenuTable[0].Type == AM_ITEM_TYPE_HEADER)
         {
-          _display.setCursor(0, _letterH * (_currentMenuItemIdx + 2 - _itemsOffset));
-          _display.print(F(" "));
-          _display.setCursor(0, _letterH * (_currentMenuItemIdx + 1 - _itemsOffset));
+          _display.setCursor(0, _letterH * (_currentMenuItemIdx - _itemsOffset + 1));
+          _drawMenuItem(_currentMenuItemIdx - _itemsOffset);
+          _drawMenuItem(_currentMenuItemIdx - _itemsOffset + 1);
         }
         else
         {
-          _display.setCursor(0, _letterH * (_currentMenuItemIdx + 1 - _itemsOffset));
-          _display.print(F(" "));
           _display.setCursor(0, _letterH * (_currentMenuItemIdx - _itemsOffset));
+          _drawMenuItem(_currentMenuItemIdx - _itemsOffset);
+          _drawMenuItem(_currentMenuItemIdx - _itemsOffset + 1);
         }
-        _display.write(16);
+
         _reDraw();
       }
     }
@@ -451,36 +408,6 @@ void ArduMenu<T>::enter(int16_t min, int16_t max)
 }
 
 template <class T>
-void ArduMenu<T>::_setRangeCurrent(uint16_t num)
-{
-  if (_boxLines >= 3){
-    _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin + (_letterH * (_boxLines / 2)));
-    _display.print(_centerText(num, _boxColumns));
-  }
-  else
-  {
-    _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin + (_letterH * (_boxLines - 1)));
-    _display.print(_centerText(num, _boxColumns));
-  }
-}
-
-template <class T>
-void ArduMenu<T>::_setRangeMetter(uint8_t num)
-{
-  if (_boxLines >= 3){
-    _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin + (_letterH * (_boxLines / 2 + 1)));
-    for (int i = 0; i < num; i++)
-    {
-      _display.write(220);
-    }
-    for (int i = 0; i < (_boxColumns - num); i++)
-    {
-      _display.write(219);
-    }
-  }
-}
-
-template <class T>
 char * ArduMenu<T>::_centerText(int num)
 {
   return _centerText(num, _screen_columns + 1);
@@ -524,6 +451,83 @@ char * ArduMenu<T>::_centerText(const char *text, uint8_t length)
 }
 
 template <class T>
+void ArduMenu<T>::_cleanUp()
+{
+  #ifdef _ADAFRUIT_PCD8544_H
+  _display.clearDisplay();
+  #endif
+  #ifdef _ADAFRUIT_ST7735H_
+  _display.fillScreen(WHITE);
+  #endif
+}
+
+template <class T>
+void ArduMenu<T>::_drawMenuItem(uint8_t i)
+{
+  char text[_screen_columns + 1];
+  char format[14];
+  
+  snprintf_P(format, 14, PSTR(" %%-%d.%ds "), _screen_columns - 2, _screen_columns - 2);
+  uint8_t len = strlen_P(_currentMenuTable[i + _itemsOffset].Text);
+  char txt[len+1] = {};
+  memcpy_P(txt, _currentMenuTable[i + _itemsOffset].Text, len);
+  snprintf(text, _screen_columns + 1, format, txt);
+
+  if (_selectionMode == AM_SELECTION_MODE_INVERTED && i == (_currentMenuItemIdx - _itemsOffset))
+  {
+    _display.setTextColor(WHITE, BLACK);
+  }
+  else if (_selectionMode == AM_SELECTION_MODE_ICON && i == (_currentMenuItemIdx - _itemsOffset))
+  {
+    _display.setTextColor(BLACK, WHITE);
+    text[0] = _selectionIcon;
+  }
+  else
+  {
+    _display.setTextColor(BLACK, WHITE);
+  }
+
+  if (_currentMenuTable[i + _itemsOffset].Type == AM_ITEM_TYPE_MENU)
+  {
+    text[_screen_columns - 1] = 175;
+  }
+
+  _display.print(text);
+  if (_currentMenuTable[i + _itemsOffset].Type == AM_ITEM_TYPE_TOGGLE)
+  {
+    uint16_t y = _display.getCursorY() + ((_letterH - _letterW)/2) + _toggleMargin;
+    #ifdef DEBUG
+    Serial.print(F("Line Y: "));
+    Serial.println(y);
+    #endif
+
+    if (_selectionMode == AM_SELECTION_MODE_INVERTED && i == (_currentMenuItemIdx - _itemsOffset))
+    {
+      if ((*_currentMenuTable[i + _itemsOffset].toggleManage)(false))
+      {
+        _display.fillRoundRect(_toggleX, y, _toggleWH, _toggleWH, 1, WHITE);
+      }
+      else
+      {
+        _display.drawRoundRect(_toggleX, y, _toggleWH, _toggleWH, 1, WHITE);
+      }
+    }
+    else
+    {
+      if ((*_currentMenuTable[i + _itemsOffset].toggleManage)(false))
+      {
+        _display.fillRoundRect(_toggleX, y, _toggleWH, _toggleWH, 1, BLACK);
+      }
+      else
+      {
+        _display.drawRoundRect(_toggleX, y, _toggleWH, _toggleWH, 1, BLACK);
+      }
+    }
+  }
+  _display.println();
+}
+
+template <class T>
 void ArduMenu<T>::_reDraw()
 {
   // This function just redraw the screen depending if is necessary
@@ -533,12 +537,70 @@ void ArduMenu<T>::_reDraw()
 }
 
 template <class T>
-void ArduMenu<T>::_cleanUp()
+void ArduMenu<T>::_setBoxSize()
 {
-  #ifdef _ADAFRUIT_PCD8544_H
-  _display.clearDisplay();
+  // Calculating message box sizes and position
+  if (_hasBox)
+  {
+    _boxWidth = _display.width() * SCREEN_BOX_AREA;
+    _boxHeight = _display.height() * SCREEN_BOX_AREA;
+    _boxXMargin = (_display.width() - _boxWidth) / 2;
+    _boxYMargin = (_display.height() - _boxHeight) / 2;
+  }
+  else
+  {
+    _boxWidth = _display.width();
+    _boxHeight = _display.height();
+    _boxXMargin = 0;
+    _boxYMargin = 0;
+  }
+  
+
+  #ifdef DEBUG
+  Serial.print(F("_boxWidth: "));
+  Serial.println(_boxWidth);
+  Serial.print(F("_boxHeight: "));
+  Serial.println(_boxHeight);
+  Serial.print(F("_boxXMargin: "));
+  Serial.println(_boxXMargin);
+  Serial.print(F("_boxYMargin: "));
+  Serial.println(_boxYMargin);
   #endif
-  #ifdef _ADAFRUIT_ST7735H_
-  _display.fillScreen(WHITE);
-  #endif
+}
+
+template <class T>
+void ArduMenu<T>::_setRangeCurrent(uint16_t num)
+{
+  if (_boxLines >= 3){
+    _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin + (_letterH * (_boxLines / 2)));
+    _display.print(_centerText(num, _boxColumns));
+  }
+  else
+  {
+    _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin + (_letterH * (_boxLines - 1)));
+    _display.print(_centerText(num, _boxColumns));
+  }
+}
+
+template <class T>
+void ArduMenu<T>::_setRangeMetter(uint8_t num)
+{
+  if (_boxLines >= 3){
+    _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin + (_letterH * (_boxLines / 2 + 1)));
+    for (int i = 0; i < num; i++)
+    {
+      _display.write(220);
+    }
+    for (int i = 0; i < (_boxColumns - num); i++)
+    {
+      _display.write(219);
+    }
+  }
+}
+
+template <class T>
+void ArduMenu<T>::_textBox(bool hasbox)
+{
+  _hasBox = hasbox;
+  _setBoxSize();
 }

@@ -20,6 +20,10 @@ struct MENU_ITEM
 #define AM_ITEM_TYPE_TOGGLE 4
 #define AM_ITEM_TYPE_EOM 5
 
+// Selection mode
+#define AM_SELECTION_MODE_ICON 0
+#define AM_SELECTION_MODE_INVERTED 1
+
 // Letters size and box area
 #define SCREEN_LETTER_W 6
 #define SCREEN_LETTER_H 8
@@ -51,6 +55,8 @@ class ArduMenu {
     void up(int16_t, int16_t);
     void enter();
     void enter(int16_t, int16_t);
+    void setSelectionMode(uint8_t);
+    void setSelectionMode(uint8_t, char);
     void setTextSize(uint8_t);
   
   protected:
@@ -78,6 +84,8 @@ class ArduMenu {
     uint8_t _screen_columns;
     uint8_t _screen_lines;
     uint8_t _screen_lines_below_text;
+    char _selectionIcon;
+    uint8_t _selectionMode;
     T _display;
 
     // Protected functions
@@ -86,11 +94,12 @@ class ArduMenu {
     char * _centerText(const char *);
     char * _centerText(const char *, uint8_t);
     void _cleanUp();
-    void _textBox(bool);
+    void _drawMenuItem(uint8_t);
+    void _reDraw();
     void _setRangeCurrent(uint16_t);
     void _setRangeMetter(uint8_t);
     void _setBoxSize();
-    void _reDraw();
+    void _textBox(bool);
 };
 
 #include "ArduMenu.hpp"
