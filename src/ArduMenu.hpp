@@ -136,8 +136,10 @@ void ArduMenu<T>::drawMenu()
   {
     if (_currentMenuTable[i + _itemsOffset].Type != AM_ITEM_TYPE_HEADER)
     {
-      Serial.print("Printing item: ");
+      #ifdef DEBUG
+      Serial.print(F("Printing item: "));
       Serial.println(i);
+      #endif
       _drawMenuItem(i);
 
       if (_currentMenuTable[i + _itemsOffset].Type == AM_ITEM_TYPE_EOM)
@@ -161,8 +163,7 @@ void ArduMenu<T>::down(int16_t min, int16_t max)
 {
   if (inRange)
   {
-    (*_currentMenuTable[_currentMenuItemIdx].rangeManage)(-1);
-    int16_t currentStep = (*_currentMenuTable[_currentMenuItemIdx].rangeManage)(0);
+    int16_t currentStep = (*_currentMenuTable[_currentMenuItemIdx].rangeManage)(-1);
     _setRangeCurrent(currentStep);
 
     if (min != max)
@@ -215,8 +216,7 @@ void ArduMenu<T>::up(int16_t min, int16_t max)
 {
   if (inRange)
   {
-    (*_currentMenuTable[_currentMenuItemIdx].rangeManage)(1);
-    int16_t currentStep = (*_currentMenuTable[_currentMenuItemIdx].rangeManage)(0);
+    int16_t currentStep = (*_currentMenuTable[_currentMenuItemIdx].rangeManage)(1);
     _setRangeCurrent(currentStep);
     if (min != max)
     {
@@ -300,6 +300,7 @@ void ArduMenu<T>::enter(int16_t min, int16_t max)
           #ifdef DEBUG
           Serial.println("Exiting range...");
           #endif
+          (*_currentMenuTable[_currentMenuItemIdx].rangeManage)(2)
           inRange = false;
           drawMenu();
         }

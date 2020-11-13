@@ -48,7 +48,6 @@ class ArduMenu {
 
     // Public functions
     void drawMenu();
-    void begin();
     void down();
     void down(int16_t, int16_t);
     void up();

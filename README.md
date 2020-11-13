@@ -21,4 +21,5 @@ With this library you'll be able to create simple menus with sub-menus. Every it
 * ~~Vertically Centered text on Range Box~~
 * ~~Different selection modes (icon, inverted...)~~
 * Allow to hide the "exit" item to use another button for example
+* ~~Add 2 as argument to range callback, that will be called on exit~~
 * Configurable colours for tft displays
