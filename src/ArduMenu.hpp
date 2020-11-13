@@ -300,7 +300,7 @@ void ArduMenu<T>::enter(int16_t min, int16_t max)
           #ifdef DEBUG
           Serial.println("Exiting range...");
           #endif
-          (*_currentMenuTable[_currentMenuItemIdx].rangeManage)(2)
+          (*_currentMenuTable[_currentMenuItemIdx].rangeManage)(2);
           inRange = false;
           drawMenu();
         }
