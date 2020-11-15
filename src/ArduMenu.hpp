@@ -375,30 +375,13 @@ void ArduMenu<T>::enter(int16_t min, int16_t max)
         Serial.println(y);
         #endif
 
-        if ((*_currentMenuTable[_currentMenuItemIdx].toggleManage)(true))
-        {
-          if (_selectionMode == AM_SELECTION_MODE_INVERTED)
-          {
-            _display.fillRoundRect(_toggleX, y + (_letterH - _letterW) + _toggleMargin, _toggleWH, _toggleWH, 1, WHITE);
-          }
-          else
-          {
-            _display.fillRoundRect(_toggleX, y + (_letterH - _letterW) + _toggleMargin, _toggleWH, _toggleWH, 1, BLACK);
-          }
-        }
-        else
-        {
-          _display.setCursor(_toggleX - _toggleMargin, y);
-          _display.print(F(" "));
-          if (_selectionMode == AM_SELECTION_MODE_INVERTED)
-          {
-            _display.drawRoundRect(_toggleX, y + (_letterH - _letterW) + _toggleMargin, _toggleWH, _toggleWH, 1, WHITE);
-          }
-          else
-          {
-            _display.drawRoundRect(_toggleX, y + (_letterH - _letterW) + _toggleMargin, _toggleWH, _toggleWH, 1, BLACK);
-          }
-        }
+        // Set the cursor position
+        (*_currentMenuTable[_currentMenuItemIdx].toggleManage)(true);
+        // Redraw the entire item to simplify
+        _display.setCursor(0, _letterH * (_currentMenuItemIdx - _itemsOffset + 1));
+        _drawMenuItem(_currentMenuItemIdx - _itemsOffset);
+
+        // Redraw if required by the display
         _reDraw();
       }
       break;
