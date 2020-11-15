@@ -5,13 +5,15 @@ ArduMenu<T>::ArduMenu(MENU_ITEM *menu, T display):
   _itemsOffset(0),
   _textSize(1),
   _hasBox(true),
+  _oldMenuItemIdx(NULL),
+  _oldMenuTable(NULL),
   _selectionMode(AM_SELECTION_MODE_ICON),
   _selectionIcon(16),
   _currentMenuTable(menu),
   _display(display)
 {
-  setTextSize(_textSize);
   _setBoxSize();
+  setTextSize(_textSize);
 }
 
 template <class T>
@@ -46,6 +48,12 @@ void ArduMenu<T>::setTextSize(uint8_t size)
   }
 
   #ifdef DEBUG
+  Serial.print(F("_letterW: "));
+  Serial.println(_letterW);
+  Serial.print(F("_letterH: "));
+  Serial.println(_letterH);
+  Serial.print(F("_textSize mult: "));
+  Serial.println((1 << size - 1));
   Serial.print(F("_boxLines: "));
   Serial.println(_boxLines);
   Serial.print(F("_boxColumns: "));
@@ -118,16 +126,18 @@ void ArduMenu<T>::drawMenu()
     _lines = _screen_lines;
   }
   
-  
   // This is a bit tricky and maybe will change in the future.
   // To keep a track of the top menus, the pointer must be saved
   // somewhere, and the "back" options is where I've choose
-  for (byte i = 0; i < 99; i++)
+  if (_oldMenuTable != NULL)
   {
-    if (_currentMenuTable[i].Type == AM_ITEM_TYPE_EOM)
+    for (byte i = 0; i < 99; i++)
     {
-      _currentMenuTable[i].SubItems = _oldMenuTable;
-      break;
+      if (_currentMenuTable[i].Type == AM_ITEM_TYPE_EOM)
+      {
+        _currentMenuTable[i].SubItems = _oldMenuTable;
+        break;
+      }
     }
   }
 
@@ -276,6 +286,8 @@ void ArduMenu<T>::enter(int16_t min, int16_t max)
       if (_currentMenuTable[_currentMenuItemIdx].SubItems != NULL)
       {
         _oldMenuTable = _currentMenuTable;
+        _oldMenuItemIdx = _currentMenuItemIdx;
+        _oldItemsOffset = _itemsOffset;
         _currentMenuTable = _currentMenuTable[_currentMenuItemIdx].SubItems;
         _itemsOffset = 0;
         _currentMenuItemIdx = 0;
@@ -324,10 +336,21 @@ void ArduMenu<T>::enter(int16_t min, int16_t max)
           {
             _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin);
             uint8_t len = strlen_P(_currentMenuTable[_currentMenuItemIdx].Text);
-            char txt[len + 1] = {};
+            char txt[len + 1];
             memcpy_P(txt, _currentMenuTable[_currentMenuItemIdx].Text, len);
+            txt[len] = '\0';
             char * tmpText = _centerText(txt, _boxColumns);
             _display.print(tmpText);
+            #ifdef DEBUG
+            Serial.print(F("Length: "));
+            Serial.println(len);
+            Serial.print(F("Text In: "));
+            Serial.println(_currentMenuTable[_currentMenuItemIdx].Text);
+            Serial.print(F("Text Extracted: "));
+            Serial.println(txt);
+            Serial.print(F("Text Out: "));
+            Serial.println(tmpText);
+            #endif
             delete [] tmpText;
           }
 
@@ -354,13 +377,27 @@ void ArduMenu<T>::enter(int16_t min, int16_t max)
 
         if ((*_currentMenuTable[_currentMenuItemIdx].toggleManage)(true))
         {
-          _display.fillRoundRect(_toggleX, y + (_letterH - _letterW) + _toggleMargin, _toggleWH, _toggleWH, 1, BLACK);
+          if (_selectionMode == AM_SELECTION_MODE_INVERTED)
+          {
+            _display.fillRoundRect(_toggleX, y + (_letterH - _letterW) + _toggleMargin, _toggleWH, _toggleWH, 1, WHITE);
+          }
+          else
+          {
+            _display.fillRoundRect(_toggleX, y + (_letterH - _letterW) + _toggleMargin, _toggleWH, _toggleWH, 1, BLACK);
+          }
         }
         else
         {
           _display.setCursor(_toggleX - _toggleMargin, y);
           _display.print(F(" "));
-          _display.drawRoundRect(_toggleX, y + (_letterH - _letterW) + _toggleMargin, _toggleWH, _toggleWH, 1, BLACK);
+          if (_selectionMode == AM_SELECTION_MODE_INVERTED)
+          {
+            _display.drawRoundRect(_toggleX, y + (_letterH - _letterW) + _toggleMargin, _toggleWH, _toggleWH, 1, WHITE);
+          }
+          else
+          {
+            _display.drawRoundRect(_toggleX, y + (_letterH - _letterW) + _toggleMargin, _toggleWH, _toggleWH, 1, BLACK);
+          }
         }
         _reDraw();
       }
@@ -372,7 +409,26 @@ void ArduMenu<T>::enter(int16_t min, int16_t max)
     //
     case AM_ITEM_TYPE_COMMAND:
     {
-      (_currentMenuTable[_currentMenuItemIdx].Function)(&_currentMenuTable[_currentMenuItemIdx]);
+      bool ret = (_currentMenuTable[_currentMenuItemIdx].Function)(&_currentMenuTable[_currentMenuItemIdx]);
+      if (ret == true)
+      {
+        #ifdef DEBUG
+        Serial.println(F("Return is true"));
+        #endif
+        _currentMenuTable = _oldMenuTable;
+        _currentMenuItemIdx = _oldMenuItemIdx;
+        _itemsOffset = _oldItemsOffset;
+        _oldMenuTable = NULL;
+        _oldMenuItemIdx = NULL;
+        _oldItemsOffset = NULL;
+        drawMenu();
+      }
+      else
+      {
+        #ifdef DEBUG
+        Serial.println(F("Return is false"));
+        #endif
+      }
       break;
     }
 
@@ -385,7 +441,6 @@ void ArduMenu<T>::enter(int16_t min, int16_t max)
       // If you have set a function for the exit option, execute it.
       // Usefull if you want to make an action on menu exit
       //
-      
       if (_currentMenuTable[_currentMenuItemIdx].Function != NULL)
       {
         (_currentMenuTable[_currentMenuItemIdx].Function)(&_currentMenuTable[_currentMenuItemIdx]);
@@ -573,13 +628,23 @@ template <class T>
 void ArduMenu<T>::_setRangeCurrent(uint16_t num)
 {
   if (_boxLines >= 3){
+    #ifdef DEBUG
+    Serial.println(F("Display box have more than three lines"));
+    #endif
     _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin + (_letterH * (_boxLines / 2)));
-    _display.print(_centerText(num, _boxColumns));
+    char * tmpText = _centerText(num, _boxColumns);
+    _display.print(tmpText);
+    delete [] tmpText;
   }
   else
   {
+    #ifdef DEBUG
+    Serial.println(F("Display box have less than three lines"));
+    #endif
     _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin + (_letterH * (_boxLines - 1)));
-    _display.print(_centerText(num, _boxColumns));
+    char * tmpText = _centerText(num, _boxColumns);
+    _display.print(tmpText);
+    delete [] tmpText;
   }
 }
 

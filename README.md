@@ -15,6 +15,9 @@ For now the module has been tested on the PCD8544 LCD (Nokia 5110), and the ST77
 ## What can I do
 With this library you'll be able to create simple menus with sub-menus. Every item must be linked to a function to made it work and for now doesn't allow arguments or returns on those functions. The menu navigation is done throught three functions (up, down and enter), wich allows to control the screen with whatever you want, for example bluetooth, serial, rotary encoder, buttons...
 
+## Important
+- This library must be loaded after the display library, or will not work propertly. Be sure to place the library header below the display header.
+
 ## ToDo
 * Test more displays
 * ~~Configurable letter size~~

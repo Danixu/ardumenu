@@ -6,7 +6,7 @@ struct MENU_ITEM
 {
   byte Type;
   const char *Text;
-  void (*Function)(MENU_ITEM *);
+  bool (*Function)(MENU_ITEM *);
   MENU_ITEM *SubItems;
   int16_t (*rangeManage)(int8_t);
   bool (*toggleManage)(bool);
@@ -61,7 +61,9 @@ class ArduMenu {
   protected:
     // Protected variables
     uint8_t _currentMenuItemIdx;
-    int8_t _itemsOffset;
+    uint8_t _oldMenuItemIdx;
+    uint8_t _itemsOffset;
+    uint8_t _oldItemsOffset;
     uint8_t _lines;
     MENU_ITEM *_currentMenuTable;
     MENU_ITEM *_oldMenuTable;
