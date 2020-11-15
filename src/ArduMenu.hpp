@@ -452,12 +452,21 @@ void ArduMenu<T>::enter(int16_t min, int16_t max)
         #endif
       }
       
-      // Set top menu as current menu and reset variables
-      _currentMenuTable = _currentMenuTable[_currentMenuItemIdx].SubItems;
-      _itemsOffset = 0;
-      _currentMenuItemIdx = 0;
-      // Draw the top menu
-      drawMenu();
+      // Set top menu as current menu (if exists) and reset variables
+      if (_currentMenuTable[_currentMenuItemIdx].SubItems != NULL)
+      {
+        _currentMenuTable = _currentMenuTable[_currentMenuItemIdx].SubItems;
+        _itemsOffset = 0;
+        _currentMenuItemIdx = 0;
+        // Draw the top menu
+        drawMenu();
+      }
+      else
+      {
+        #ifdef DEBUG
+        Serial.println(F("Back button has no top menu"));
+        #endif
+      }
       break;
     }
   }
