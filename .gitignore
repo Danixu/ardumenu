@@ -49,3 +49,4 @@ Temporary Items
 # Rest
 **.pdsbak
 **.workspace
+**.with_bootloader.standard.hex
