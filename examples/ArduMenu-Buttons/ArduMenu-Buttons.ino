@@ -2,7 +2,7 @@
 #include <Adafruit_PCD8544.h> // Hardware-specific library
 #include <SPI.h>
 #include "ArduMenu.h" // Menu class header. Is important to load this library after the display library.
-#include <DebounceEvent.h>
+#include <ButtonDebouncer.h>
 
 Adafruit_PCD8544 display = Adafruit_PCD8544(7, 6, 5, 4, 3);
 
@@ -117,9 +117,9 @@ int counter = 0;
 // Set to 0 to disable double clicks but get a faster response
 #define CUSTOM_REPEAT_DELAY     0
 
-DebounceEvent button_up = DebounceEvent(BTNUP, buttonCallback, BUTTON_PUSHBUTTON | BUTTON_DEFAULT_HIGH | BUTTON_SET_PULLUP);
-DebounceEvent button_down = DebounceEvent(BTNDOWN, buttonCallback, BUTTON_PUSHBUTTON | BUTTON_DEFAULT_HIGH | BUTTON_SET_PULLUP);
-DebounceEvent button_enter = DebounceEvent(BTNENTER, buttonCallback, BUTTON_PUSHBUTTON | BUTTON_DEFAULT_HIGH | BUTTON_SET_PULLUP);
+ButtonDebouncer button_up = ButtonDebouncer(BTNUP, buttonCallback, BUTTON_PUSHBUTTON | BUTTON_DEFAULT_HIGH | BUTTON_SET_PULLUP);
+ButtonDebouncer button_down = ButtonDebouncer(BTNDOWN, buttonCallback, BUTTON_PUSHBUTTON | BUTTON_DEFAULT_HIGH | BUTTON_SET_PULLUP);
+ButtonDebouncer button_enter = ButtonDebouncer(BTNENTER, buttonCallback, BUTTON_PUSHBUTTON | BUTTON_DEFAULT_HIGH | BUTTON_SET_PULLUP | BUTTON_LONG_PRESS);
 
 void setup()
 {
@@ -158,20 +158,20 @@ void loop() {
 }
 
 void buttonCallback(uint8_t pin, uint8_t event, uint8_t count, uint16_t length) {
+  if (event == EVENT_LONG_PRESSED)
+  {
+    if (pin == BTNENTER)
+    {
+      // Enter button was pressed by more than MENUDELAY
+      // Draw the menu
+      menuObject->drawMenu();
+      inMenu = true;
+    }
+  }
+  
   if (event == EVENT_RELEASED)
   {
-    if (!inMenu)
-    {
-      // We are not in menu
-      if (pin == BTNENTER and length > MENUDELAY)
-      {
-        // Enter button was pressed by more than MENUDELAY
-        // Draw the menu
-        menuObject->drawMenu();
-        inMenu = true;
-      }
-    }
-    else
+    if (inMenu)
     {
       // We are in menu
       if (pin == BTNUP)

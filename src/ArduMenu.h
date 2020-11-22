@@ -48,12 +48,9 @@ class ArduMenu {
 
     // Public functions
     void drawMenu();
-    void down();
-    void down(int16_t, int16_t);
-    void up();
-    void up(int16_t, int16_t);
-    void enter();
-    void enter(int16_t, int16_t);
+    void down(int16_t = NULL, int16_t = NULL);
+    void up(int16_t = NULL, int16_t = NULL);
+    void enter(int16_t = NULL, int16_t = NULL);
     void setSelectionMode(uint8_t);
     void setSelectionMode(uint8_t, char);
     void setTextSize(uint8_t);

@@ -163,12 +163,6 @@ void ArduMenu<T>::drawMenu()
 }
 
 template <class T>
-void ArduMenu<T>::down()
-{
-  down(NULL, NULL);
-}
-
-template <class T>
 void ArduMenu<T>::down(int16_t min, int16_t max)
 {
   if (inRange)
@@ -213,12 +207,6 @@ void ArduMenu<T>::down(int16_t min, int16_t max)
       }
     }
   }
-}
-
-template <class T>
-void ArduMenu<T>::up()
-{
-  up(NULL, NULL);
 }
 
 template <class T>
@@ -268,12 +256,6 @@ void ArduMenu<T>::up(int16_t min, int16_t max)
 }
 
 template <class T>
-void ArduMenu<T>::enter()
-{
-  enter(NULL, NULL);
-}
-
-template <class T>
 void ArduMenu<T>::enter(int16_t min, int16_t max)
 {
   switch(_currentMenuTable[_currentMenuItemIdx].Type)
@@ -289,8 +271,16 @@ void ArduMenu<T>::enter(int16_t min, int16_t max)
         _oldMenuItemIdx = _currentMenuItemIdx;
         _oldItemsOffset = _itemsOffset;
         _currentMenuTable = _currentMenuTable[_currentMenuItemIdx].SubItems;
-        _itemsOffset = 0;
-        _currentMenuItemIdx = 0;
+        if (min && !max)
+        {
+          _itemsOffset = min - _lines;
+          _currentMenuItemIdx = min;
+        }
+        else
+        {
+          _itemsOffset = 0;
+          _currentMenuItemIdx = 0;
+        }
         drawMenu();
       }
       else
@@ -398,13 +388,16 @@ void ArduMenu<T>::enter(int16_t min, int16_t max)
         #ifdef DEBUG
         Serial.println(F("Return is true"));
         #endif
-        _currentMenuTable = _oldMenuTable;
-        _currentMenuItemIdx = _oldMenuItemIdx;
-        _itemsOffset = _oldItemsOffset;
-        _oldMenuTable = NULL;
-        _oldMenuItemIdx = NULL;
-        _oldItemsOffset = NULL;
-        drawMenu();
+        if (_oldMenuTable)
+        {
+          _currentMenuTable = _oldMenuTable;
+          _currentMenuItemIdx = _oldMenuItemIdx;
+          _itemsOffset = _oldItemsOffset;
+          _oldMenuTable = NULL;
+          _oldMenuItemIdx = NULL;
+          _oldItemsOffset = NULL;
+          drawMenu();
+        }
       }
       else
       {
@@ -539,6 +532,10 @@ void ArduMenu<T>::_drawMenuItem(uint8_t i)
   {
     text[_screen_columns - 1] = 175;
   }
+
+  #ifdef DEBUG
+  Serial.println(text);
+  #endif
 
   _display.print(text);
   if (_currentMenuTable[i + _itemsOffset].Type == AM_ITEM_TYPE_TOGGLE)
