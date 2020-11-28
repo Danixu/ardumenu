@@ -290,13 +290,9 @@ void ArduMenu<T>::enter(int16_t min, int16_t max)
         _display.setCursor(_boxColumnsXMargin, center);
         if (_currentMenuTable[_currentMenuItemIdx].disabledText == NULL)
         {
-          Serial.println("disabledText Empty");
-          Serial.println(_disabledSTR);
           uint8_t len = strlen_P(_disabledSTR);
-          Serial.println(len);
           char txt[len + 1];
           memcpy_P(txt, _disabledSTR, len);
-          Serial.println(txt);
           char * tmpText = _centerText(txt, _boxColumns);
           _display.print(tmpText);
           delete [] tmpText;
