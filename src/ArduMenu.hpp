@@ -165,7 +165,11 @@ void ArduMenu<T>::drawMenu()
 template <class T>
 void ArduMenu<T>::down(int16_t min, int16_t max)
 {
-  if (inRange)
+  if (_inDisabled)
+  {
+    // Ignore buttons
+  }
+  else if (inRange)
   {
     int16_t currentStep = (*_currentMenuTable[_currentMenuItemIdx].rangeManage)(-1);
     _setRangeCurrent(currentStep);
@@ -212,7 +216,11 @@ void ArduMenu<T>::down(int16_t min, int16_t max)
 template <class T>
 void ArduMenu<T>::up(int16_t min, int16_t max)
 {
-  if (inRange)
+  if (_inDisabled)
+  {
+    // Ignore buttons
+  }
+  else if (inRange)
   {
     int16_t currentStep = (*_currentMenuTable[_currentMenuItemIdx].rangeManage)(1);
     _setRangeCurrent(currentStep);
