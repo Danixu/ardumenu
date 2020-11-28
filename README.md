@@ -33,3 +33,17 @@ To see how to use it, just go to examples folder and check the project/s
 * ~~Add 2 as argument to range callback, that will be called on exit~~
 * ~~Add ability to disable options with personalized text~~
 * Configurable colours for tft displays
+
+## Changelog
+### 1.1.0
+- Now you can disable the menu options.
+- Fixed the examples with the new option
+
+### 1.0.1
+- Bugfixes, including a memory leak
+- Fixed a bug when there's no top menu and a menu option that returns true is selected.
+- Now the togle menu option is fully redrawn to avoid errors and made it simple
+- Updated examples
+
+### 1.0.0
+- First version
