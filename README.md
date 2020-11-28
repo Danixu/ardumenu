@@ -21,6 +21,9 @@ To see how to use it, just go to examples folder and check the project/s
 ## Important
 - This library must be loaded after the display library, or will not work propertly. Be sure to place the library header below the display header.
 
+## Extra info
+* "Disabled" text is limited to 11 characters for now
+
 ## ToDo
 * Test more displays
 * ~~Configurable letter size~~
@@ -28,4 +31,5 @@ To see how to use it, just go to examples folder and check the project/s
 * ~~Different selection modes (icon, inverted...)~~
 * Allow to hide the "exit" item to use another button for example
 * ~~Add 2 as argument to range callback, that will be called on exit~~
+* ~~Add ability to disable options with personalized text~~
 * Configurable colours for tft displays

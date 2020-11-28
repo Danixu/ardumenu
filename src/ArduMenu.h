@@ -4,13 +4,17 @@
 
 struct MENU_ITEM
 {
-  byte Type;
-  const char *Text;
-  bool (*Function)(MENU_ITEM *);
-  MENU_ITEM *SubItems;
+  byte type;
+  const char *text;
+  bool (*function)(MENU_ITEM *);
+  MENU_ITEM *subItems;
   int16_t (*rangeManage)(int8_t);
   bool (*toggleManage)(bool);
+  bool disabled;
+  const char *disabledText;
 };
+
+const char _disabledSTR [] PROGMEM = { "Disabled" };
 
 // Menu items types definitions
 #define AM_ITEM_TYPE_HEADER 0
@@ -41,7 +45,7 @@ template <class T>
 class ArduMenu {
   public:
     // Init function
-    ArduMenu(MENU_ITEM *menu, T display);
+    ArduMenu(MENU_ITEM * menu, T & display);
 
     // Public variables
     bool inRange;
@@ -65,6 +69,7 @@ class ArduMenu {
     MENU_ITEM *_currentMenuTable;
     MENU_ITEM *_oldMenuTable;
     bool _hasBox;
+    bool _inDisabled = false;
     uint8_t _boxWidth;
     uint8_t _boxHeight;
     uint8_t _boxXMargin;

@@ -33,6 +33,8 @@ int whiteLedRangeOnExit(int8_t);
 //   SubItems: A MENU_ITEM object that is used on AM_ITEM_TYPE_MENU items.
 //   rangeManage: Callback function to manage the range item. Is used on AM_ITEM_TYPE_RANGE.
 //   toggleManage: Callback function to manage the toggle item. Is used on AM_ITEM_TYPE_TOGGLE
+//   disabled: Boolean to set the menu item as disabled
+//   disabledText: const char PROGMEM which contains the text that will be sown when the option is disabled, limited to 11 characters for now. If not set, a defatult message will be used
 //   
 // Class methods:
 //   drawMenu: Draw the current menu on the display
@@ -55,9 +57,9 @@ const char onOffMenu01 [] PROGMEM = { "Off"  };
 const char onOffMenu02 [] PROGMEM = { "Back" };
 MENU_ITEM onOffMenu[]= {
   // byte Type, char Text, bool Function, MENU_ITEM SubItems, int rangeManage, bool toggleManage
-  { AM_ITEM_TYPE_COMMAND, onOffMenu00, redLedOn,  NULL, NULL, NULL },
-  { AM_ITEM_TYPE_COMMAND, onOffMenu01, redLedOff, NULL, NULL, NULL },
-  { AM_ITEM_TYPE_EOM,     onOffMenu02, NULL,      NULL, NULL, NULL },
+  { AM_ITEM_TYPE_COMMAND, onOffMenu00, redLedOn,  NULL, NULL, NULL, NULL, NULL },
+  { AM_ITEM_TYPE_COMMAND, onOffMenu01, redLedOff, NULL, NULL, NULL, NULL, NULL },
+  { AM_ITEM_TYPE_EOM,     onOffMenu02, NULL,      NULL, NULL, NULL, NULL, NULL },
 };
 
 
@@ -72,12 +74,12 @@ const char mainMenu05 [] PROGMEM = { "All Off"     };
 
 MENU_ITEM mainMenu[] = {
   // byte Type, char Text, bool Function, MENU_ITEM SubItems, int rangeManage, bool toggleManage  
-  { AM_ITEM_TYPE_HEADER, mainMenu00, NULL,       NULL,      NULL,                NULL           },
-  { AM_ITEM_TYPE_MENU,   mainMenu01, NULL,       onOffMenu, NULL,                NULL           },
-  { AM_ITEM_TYPE_TOGGLE, mainMenu02, NULL,       NULL,      NULL,                greenLedToggle },
-  { AM_ITEM_TYPE_RANGE,  mainMenu03, NULL,       NULL,      whiteLedRange,       NULL           },
-  { AM_ITEM_TYPE_RANGE,  mainMenu04, NULL,       NULL,      whiteLedRangeOnExit, NULL           },
-  { AM_ITEM_TYPE_EOM,    mainMenu05, allLedsOff, NULL,      NULL,                NULL           },
+  { AM_ITEM_TYPE_HEADER, mainMenu00, NULL,       NULL,      NULL,                NULL          , NULL, NULL },
+  { AM_ITEM_TYPE_MENU,   mainMenu01, NULL,       onOffMenu, NULL,                NULL          , NULL, NULL },
+  { AM_ITEM_TYPE_TOGGLE, mainMenu02, NULL,       NULL,      NULL,                greenLedToggle, NULL, NULL },
+  { AM_ITEM_TYPE_RANGE,  mainMenu03, NULL,       NULL,      whiteLedRange,       NULL          , NULL, NULL },
+  { AM_ITEM_TYPE_RANGE,  mainMenu04, NULL,       NULL,      whiteLedRangeOnExit, NULL          , NULL, NULL },
+  { AM_ITEM_TYPE_EOM,    mainMenu05, allLedsOff, NULL,      NULL,                NULL          , NULL, NULL },
 };
 
 
