@@ -8,7 +8,7 @@ struct MENU_ITEM
   const char *text;
   bool (*function)(MENU_ITEM *);
   MENU_ITEM *subItems;
-  int16_t (*rangeManage)(int8_t);
+  int16_t (*rangeManage)(int16_t);
   bool (*toggleManage)(bool);
   bool disabled;
   const char *disabledText;

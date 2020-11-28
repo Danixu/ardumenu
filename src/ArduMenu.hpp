@@ -461,6 +461,9 @@ void ArduMenu<T>::enter(int16_t min, int16_t max)
       }
       else
       {
+        _oldMenuTable = NULL;
+        _oldMenuItemIdx = NULL;
+        _oldItemsOffset = NULL;
         #ifdef DEBUG
         Serial.println(F("Return is false"));
         #endif
@@ -494,11 +497,17 @@ void ArduMenu<T>::enter(int16_t min, int16_t max)
         _currentMenuTable = _currentMenuTable[_currentMenuItemIdx].subItems;
         _itemsOffset = 0;
         _currentMenuItemIdx = 0;
+        _oldMenuTable = NULL;
+        _oldMenuItemIdx = NULL;
+        _oldItemsOffset = NULL;
         // Draw the top menu
         drawMenu();
       }
       else
       {
+        _oldMenuTable = NULL;
+        _oldMenuItemIdx = NULL;
+        _oldItemsOffset = NULL;
         #ifdef DEBUG
         Serial.println(F("Back button has no top menu"));
         #endif
