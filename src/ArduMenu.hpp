@@ -385,6 +385,7 @@ void ArduMenu<T>::enter(int16_t min, int16_t max)
             uint8_t len = strlen_P(_currentMenuTable[_currentMenuItemIdx].text);
             char txt[len + 1];
             memcpy_P(txt, _currentMenuTable[_currentMenuItemIdx].text, len);
+            txt[len] = '\0';
             char * tmpText = _centerText(txt, _boxColumns);
             _display.print(tmpText);
             #ifdef DEBUG
