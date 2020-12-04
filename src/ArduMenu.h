@@ -48,27 +48,26 @@ class ArduMenu {
     ArduMenu(MENU_ITEM * menu, T & display);
 
     // Public variables
-    bool inRange;
+    bool inRange = false;
 
     // Public functions
     void drawMenu();
     void down(int16_t = NULL, int16_t = NULL);
     void up(int16_t = NULL, int16_t = NULL);
     void enter(int16_t = NULL, int16_t = NULL);
-    void setSelectionMode(uint8_t);
-    void setSelectionMode(uint8_t, char);
+    void setSelectionMode(uint8_t, char icon = 16);
     void setTextSize(uint8_t);
-  
+
   protected:
     // Protected variables
-    uint8_t _currentMenuItemIdx;
-    uint8_t _oldMenuItemIdx;
-    uint8_t _itemsOffset;
-    uint8_t _oldItemsOffset;
+    uint8_t _currentMenuItemIdx = 0;
+    uint8_t _oldMenuItemIdx = NULL;
+    uint8_t _itemsOffset = 0;
+    uint8_t _baseOffset = 0;
+    uint8_t _oldItemsOffset = 0;
     uint8_t _lines;
     MENU_ITEM *_currentMenuTable;
-    MENU_ITEM *_oldMenuTable;
-    bool _hasBox;
+    MENU_ITEM *_oldMenuTable = NULL;
     bool _inDisabled = false;
     uint8_t _boxWidth;
     uint8_t _boxHeight;
@@ -81,14 +80,14 @@ class ArduMenu {
     uint8_t _toggleMargin;
     uint16_t _toggleX;
     uint8_t _toggleWH;
-    uint8_t _textSize;
+    uint8_t _textSize = 1;
     uint8_t _letterW;
     uint8_t _letterH;
     uint8_t _screen_columns;
     uint8_t _screen_lines;
     uint8_t _screen_lines_below_text;
-    char _selectionIcon;
-    uint8_t _selectionMode;
+    char _selectionIcon = 16;
+    uint8_t _selectionMode = AM_SELECTION_MODE_ICON;
     T _display;
 
     // Protected functions
@@ -102,7 +101,6 @@ class ArduMenu {
     void _setRangeCurrent(uint16_t);
     void _setRangeMetter(uint8_t);
     void _setBoxSize();
-    void _textBox(bool);
 };
 
 #include "ArduMenu.hpp"
