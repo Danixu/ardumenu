@@ -35,6 +35,9 @@ To see how to use it, just go to examples folder and check the project/s
 * Configurable colours for tft displays
 
 ## Changelog
+### 1.2.0
+- Rewritten some parts to save about 2k of Program Memory
+
 ### 1.1.0
 - Now you can disable the menu options.
 - Fixed the examples with the new option
