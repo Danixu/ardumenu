@@ -61,11 +61,11 @@ class ArduMenu {
   protected:
     // Protected variables
     uint8_t _currentMenuItemIdx = 0;
-    uint8_t _oldMenuItemIdx = NULL;
     uint8_t _itemsOffset = 0;
     uint8_t _baseOffset = 0;
+    uint8_t _oldMenuItemIdx = NULL;
     uint8_t _oldItemsOffset = 0;
-    uint8_t _lines;
+    uint8_t _oldBaseOffset = 0;
     MENU_ITEM *_currentMenuTable;
     MENU_ITEM *_oldMenuTable = NULL;
     bool _inDisabled = false;
@@ -77,23 +77,17 @@ class ArduMenu {
     uint8_t _boxLinesYMargin;
     uint8_t _boxColumns;
     uint8_t _boxColumnsXMargin;
-    uint8_t _toggleMargin;
-    uint16_t _toggleX;
-    uint8_t _toggleWH;
     uint8_t _textSize = 1;
     uint8_t _letterW;
     uint8_t _letterH;
     uint8_t _screen_columns;
     uint8_t _screen_lines;
-    uint8_t _screen_lines_below_text;
     char _selectionIcon = 16;
     uint8_t _selectionMode = AM_SELECTION_MODE_ICON;
     T _display;
 
     // Protected functions
-    char * _centerText(int);
     char * _centerText(int, uint8_t);
-    char * _centerText(const char *);
     char * _centerText(const char *, uint8_t);
     void _cleanUp();
     void _drawMenuItem(uint8_t);
