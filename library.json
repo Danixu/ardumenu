@@ -1,0 +1,25 @@
+{
+    "name": "ArduMenu",
+    "keywords": "menu,actions",
+    "description": "This library allows to create simple menus, that allows you to execute functions on item selection.",
+    "repository": {
+        "type": "git",
+        "url": "https://bitbucket.org/danixu/ardumenu"
+    },
+    "version": "1.2.0",
+    "license": "GPL-3.0",
+    "exclude": "tests",
+    "frameworks": "arduino",
+    "platforms": ["atmelavr"],
+    "dependencies": [
+    ],
+    "authors": {
+        "name": "Daniel Carrasco",
+        "email": "admin@electrosoftcloud.com",
+        "url": "https://www.electrosoftcloud.com/",
+        "maintainer": true
+    },
+    "examples": [
+        "examples/*/*.ino"
+    ]
+}
