@@ -44,7 +44,7 @@ void buttonCallback(uint8_t, uint8_t, uint8_t, uint16_t);
 //   up: On menu will select the previous item. On range will call the callback function with -1 as argument.
 //   enter: Select the current menu item. On AM_ITEM_TYPE_COMMAND and AM_ITEM_TYPE_EOM, callback function will be called. On AM_ITEM_TYPE_COMMAND if the callback function returns true, the top menu will be drawn.
 //                                        On AM_ITEM_TYPE_MENU the SubItems menu will be shown.
-//                                        On AM_ITEM_TYPE_RANGE, a range box will be shown. The callback function will be called with 0 as argument to retreive the current status. On exit function callback will be called with 2 as argument.
+//                                        On AM_ITEM_TYPE_RANGE, a range box will be shown. The callback function will be called with 0 as argument to retreive the current status. On exit function callback will be called with 32767 as argument.
 //                                        On AM_ITEM_TYPE_TOGGLE, the callback function will be called with true as argument, and the returned bool will be used to redraw the icon.
 //   setSelectionMode: Se the selection mode between AM_SELECTION_MODE_ICON and AM_SELECTION_MODE_INVERTED. AM_SELECTION_MODE_ICON accepts a second argument, that allows to change the char used as icon.
 //   setTextSize: Sets the menu text size (default 1).
@@ -240,7 +240,7 @@ int whiteLedRangeOnExit(int8_t mode)
       whiteLedStatus = 0;
     }
   }
-  if (mode == 2)
+  if (mode == 32767)
   {
     analogWrite(WHITELED, whiteLedStatus);
   }

@@ -1,6 +1,6 @@
 template <class T>
 ArduMenu<T>::ArduMenu(MENU_ITEM * menu, T & display):
-  _currentMenuTable(menu),
+  currentMenuTable(menu),
   _display(display) 
 {
   _boxWidth = _display.width() * SCREEN_BOX_AREA;
@@ -88,8 +88,8 @@ void ArduMenu<T>::drawMenu() {
   // somewhere, and the "back" options is where I've choosen
   if (_oldMenuTable != NULL) {
     for (uint8_t i = 0; i < 99; i++) {
-      if (_currentMenuTable[i].type == AM_ITEM_TYPE_EOM) {
-        _currentMenuTable[i].subItems = _oldMenuTable;
+      if (currentMenuTable[i].type == AM_ITEM_TYPE_EOM) {
+        currentMenuTable[i].subItems = _oldMenuTable;
         break;
       }
     }
@@ -99,7 +99,7 @@ void ArduMenu<T>::drawMenu() {
 
   // Running through the menu items
   for (uint8_t i = 0; i < loopEnd; i++) {
-    if (_currentMenuTable[i].type == AM_ITEM_TYPE_HEADER || i >= (_itemsOffset + _baseOffset)) {
+    if (currentMenuTable[i].type == AM_ITEM_TYPE_HEADER || i >= (_itemsOffset + _baseOffset)) {
       #ifdef DEBUG
       Serial.print(F("Printing item: "));
       Serial.println(i);
@@ -121,7 +121,7 @@ void ArduMenu<T>::drawMenu() {
       #endif
     }
 
-    if (_currentMenuTable[i].type == AM_ITEM_TYPE_EOM) {
+    if (currentMenuTable[i].type == AM_ITEM_TYPE_EOM) {
       break;
     }
   }
@@ -130,12 +130,12 @@ void ArduMenu<T>::drawMenu() {
 }
 
 template <class T>
-void ArduMenu<T>::down(int16_t min, int16_t max) {
+void ArduMenu<T>::down(int16_t min, int16_t max, uint16_t steps) {
   if (_inDisabled) {
     // Ignore buttons
   }
   else if (inRange) {
-    int16_t currentStep = (*_currentMenuTable[_currentMenuItemIdx].rangeManage)(-1);
+    int16_t currentStep = (*currentMenuTable[currentMenuItemIdx].rangeManage)(-steps);
     _setRangeCurrent(currentStep);
 
     #ifdef DEBUG
@@ -153,16 +153,16 @@ void ArduMenu<T>::down(int16_t min, int16_t max) {
     _reDraw();
   }
   else {
-    if (_currentMenuTable[_currentMenuItemIdx].type != AM_ITEM_TYPE_EOM) {
-      _currentMenuItemIdx++;
-      if ((_currentMenuItemIdx - _itemsOffset) >= (_screen_lines)) {
+    if (currentMenuTable[currentMenuItemIdx].type != AM_ITEM_TYPE_EOM) {
+      currentMenuItemIdx++;
+      if ((currentMenuItemIdx - _itemsOffset) >= (_screen_lines)) {
         _itemsOffset++;
         drawMenu();
       }
       else {
-        _display.setCursor(0, _letterH * (_currentMenuItemIdx - _itemsOffset - 1));
-        _drawMenuItem(_currentMenuItemIdx - 1);
-        _drawMenuItem(_currentMenuItemIdx);
+        _display.setCursor(0, _letterH * (currentMenuItemIdx - _itemsOffset - 1));
+        _drawMenuItem(currentMenuItemIdx - 1);
+        _drawMenuItem(currentMenuItemIdx);
 
         _reDraw();
       }
@@ -171,12 +171,12 @@ void ArduMenu<T>::down(int16_t min, int16_t max) {
 }
 
 template <class T>
-void ArduMenu<T>::up(int16_t min, int16_t max) {
+void ArduMenu<T>::up(int16_t min, int16_t max, uint16_t steps) {
   if (_inDisabled) {
     // Ignore buttons
   }
   else if (inRange) {
-    int16_t currentStep = (*_currentMenuTable[_currentMenuItemIdx].rangeManage)(1);
+    int16_t currentStep = (*currentMenuTable[currentMenuItemIdx].rangeManage)(steps);
     _setRangeCurrent(currentStep);
     
     #ifdef DEBUG
@@ -194,16 +194,16 @@ void ArduMenu<T>::up(int16_t min, int16_t max) {
     _reDraw();
   }
   else {
-    if (_currentMenuItemIdx != 0 && _currentMenuTable[_currentMenuItemIdx - 1].type != AM_ITEM_TYPE_HEADER) {
-      _currentMenuItemIdx--;
-      if ((_baseOffset + _itemsOffset) > _currentMenuItemIdx) {
+    if (currentMenuItemIdx != 0 && currentMenuTable[currentMenuItemIdx - 1].type != AM_ITEM_TYPE_HEADER) {
+      currentMenuItemIdx--;
+      if ((_baseOffset + _itemsOffset) > currentMenuItemIdx) {
         _itemsOffset--;
         drawMenu();
       }
       else {
-        _display.setCursor(0, _letterH * (_currentMenuItemIdx - _itemsOffset));
-        _drawMenuItem(_currentMenuItemIdx);
-        _drawMenuItem(_currentMenuItemIdx + 1);
+        _display.setCursor(0, _letterH * (currentMenuItemIdx - _itemsOffset));
+        _drawMenuItem(currentMenuItemIdx);
+        _drawMenuItem(currentMenuItemIdx + 1);
 
         _reDraw();
       }
@@ -213,7 +213,7 @@ void ArduMenu<T>::up(int16_t min, int16_t max) {
 
 template <class T>
 void ArduMenu<T>::enter(int16_t min, int16_t max) {
-  if (_currentMenuTable[_currentMenuItemIdx].disabled == true) {
+  if (currentMenuTable[currentMenuItemIdx].disabled == true) {
     if (_inDisabled) {
       drawMenu();
       _inDisabled = false;
@@ -225,7 +225,7 @@ void ArduMenu<T>::enter(int16_t min, int16_t max) {
       if (_boxLines >= 2) {
         uint8_t center = (_boxHeight - _letterH) / 2;
         _display.setCursor(_boxColumnsXMargin, center);
-        if (_currentMenuTable[_currentMenuItemIdx].disabledText == NULL) {
+        if (currentMenuTable[currentMenuItemIdx].disabledText == NULL) {
           uint8_t len = strlen_P(_disabledSTR);
           char txt[len + 1];
           memcpy_P(txt, _disabledSTR, len);
@@ -235,9 +235,9 @@ void ArduMenu<T>::enter(int16_t min, int16_t max) {
           delete [] tmpText;
         }
         else {        
-          uint8_t len = strlen_P(_currentMenuTable[_currentMenuItemIdx].disabledText);
+          uint8_t len = strlen_P(currentMenuTable[currentMenuItemIdx].disabledText);
           char txt[len + 1];
-          memcpy_P(txt, _currentMenuTable[_currentMenuItemIdx].disabledText, len);
+          memcpy_P(txt, currentMenuTable[currentMenuItemIdx].disabledText, len);
           char * tmpText = _centerText(txt, _boxColumns);
           _display.print(tmpText);
           delete [] tmpText;
@@ -251,21 +251,21 @@ void ArduMenu<T>::enter(int16_t min, int16_t max) {
     
     return;
   }
-  switch(_currentMenuTable[_currentMenuItemIdx].type) {
+  switch(currentMenuTable[currentMenuItemIdx].type) {
     //
     // The item is a menu... Displaying the submenu.
     //
     case AM_ITEM_TYPE_MENU: {
-      if (_currentMenuTable[_currentMenuItemIdx].subItems != NULL) {
-        _oldMenuTable = _currentMenuTable;
-        _oldMenuItemIdx = _currentMenuItemIdx;
+      if (currentMenuTable[currentMenuItemIdx].subItems != NULL) {
+        _oldMenuTable = currentMenuTable;
+        _oldMenuItemIdx = currentMenuItemIdx;
         _oldItemsOffset = _itemsOffset;
         _oldBaseOffset = _baseOffset;
-        _currentMenuTable = _currentMenuTable[_currentMenuItemIdx].subItems;
+        currentMenuTable = currentMenuTable[currentMenuItemIdx].subItems;
 
         _itemsOffset = 0;
         _baseOffset = 0;
-        _currentMenuItemIdx = 0;
+        currentMenuItemIdx = 0;
         drawMenu();
       }
       else {
@@ -278,12 +278,12 @@ void ArduMenu<T>::enter(int16_t min, int16_t max) {
     }
 
     case AM_ITEM_TYPE_RANGE: {
-      if (_currentMenuTable[_currentMenuItemIdx].rangeManage != NULL) {
+      if (currentMenuTable[currentMenuItemIdx].rangeManage != NULL) {
         if (inRange) {
           #ifdef DEBUG
           Serial.println("Exiting range...");
           #endif
-          (*_currentMenuTable[_currentMenuItemIdx].rangeManage)(2);
+          (*currentMenuTable[currentMenuItemIdx].rangeManage)(32767);
           inRange = false;
           drawMenu();
         }
@@ -292,15 +292,15 @@ void ArduMenu<T>::enter(int16_t min, int16_t max) {
           Serial.println(F("Range item detected..."));
           #endif
           inRange = true;
-          uint16_t currentStep = (*_currentMenuTable[_currentMenuItemIdx].rangeManage)(0);
+          uint16_t currentStep = (*currentMenuTable[currentMenuItemIdx].rangeManage)(0);
 
           _display.fillRect(_boxXMargin, _boxYMargin, _boxWidth, _boxHeight, WHITE);
           _display.drawRect(_boxXMargin, _boxYMargin, _boxWidth, _boxHeight, BLACK);
 
           _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin);
-          uint8_t len = strlen_P(_currentMenuTable[_currentMenuItemIdx].text);
+          uint8_t len = strlen_P(currentMenuTable[currentMenuItemIdx].text);
           char txt[len + 1];
-          memcpy_P(txt, _currentMenuTable[_currentMenuItemIdx].text, len);
+          memcpy_P(txt, currentMenuTable[currentMenuItemIdx].text, len);
           txt[len] = '\0';
           char * tmpText = _centerText(txt, _boxColumns);
           _display.print(tmpText);
@@ -308,7 +308,7 @@ void ArduMenu<T>::enter(int16_t min, int16_t max) {
           Serial.print(F("Length: "));
           Serial.println(len);
           Serial.print(F("Text In: "));
-          Serial.println(_currentMenuTable[_currentMenuItemIdx].text);
+          Serial.println(currentMenuTable[currentMenuItemIdx].text);
           Serial.print(F("Text Extracted: "));
           Serial.println(txt);
           Serial.print(F("Text Out: "));
@@ -329,6 +329,7 @@ void ArduMenu<T>::enter(int16_t min, int16_t max) {
           if (min != max) {
             int16_t range = max - min;
             uint8_t n = (float)(currentStep - min) / range * _boxColumns;
+            _rangeStatusLevel = -1;
             _setRangeMetter(n);
           }
           _reDraw();
@@ -337,17 +338,17 @@ void ArduMenu<T>::enter(int16_t min, int16_t max) {
       break;
 
       case AM_ITEM_TYPE_TOGGLE: {
-        uint16_t y = _letterH * _currentMenuItemIdx;
+        uint16_t y = _letterH * currentMenuItemIdx;
         #ifdef DEBUG
         Serial.print(F("Line Y: "));
         Serial.println(y);
         #endif
 
         // Set the cursor position
-        (*_currentMenuTable[_currentMenuItemIdx].toggleManage)(true);
+        (*currentMenuTable[currentMenuItemIdx].toggleManage)(true);
         // Redraw the entire item to simplify
-        _display.setCursor(0, _letterH * (_currentMenuItemIdx - _itemsOffset));
-        _drawMenuItem(_currentMenuItemIdx);
+        _display.setCursor(0, _letterH * (currentMenuItemIdx - _itemsOffset));
+        _drawMenuItem(currentMenuItemIdx);
 
         // Redraw if required by the display
         _reDraw();
@@ -359,14 +360,14 @@ void ArduMenu<T>::enter(int16_t min, int16_t max) {
     // The item is a function
     //
     case AM_ITEM_TYPE_COMMAND: {
-      bool ret = (_currentMenuTable[_currentMenuItemIdx].function)(&_currentMenuTable[_currentMenuItemIdx]);
+      bool ret = (currentMenuTable[currentMenuItemIdx].function)(&currentMenuTable[currentMenuItemIdx]);
       if (ret == true) {
         #ifdef DEBUG
         Serial.println(F("Return is true"));
         #endif
         if (_oldMenuTable) {
-          _currentMenuTable = _oldMenuTable;
-          _currentMenuItemIdx = _oldMenuItemIdx;
+          currentMenuTable = _oldMenuTable;
+          currentMenuItemIdx = _oldMenuItemIdx;
           _itemsOffset = _oldItemsOffset;
           _baseOffset = _oldBaseOffset;
           _oldMenuTable = NULL;
@@ -396,8 +397,8 @@ void ArduMenu<T>::enter(int16_t min, int16_t max) {
       // If you have set a function for the exit option, execute it.
       // Usefull if you want to make an action on menu exit
       //
-      if (_currentMenuTable[_currentMenuItemIdx].function != NULL) {
-        (_currentMenuTable[_currentMenuItemIdx].function)(&_currentMenuTable[_currentMenuItemIdx]);
+      if (currentMenuTable[currentMenuItemIdx].function != NULL) {
+        (currentMenuTable[currentMenuItemIdx].function)(&currentMenuTable[currentMenuItemIdx]);
       }
       else {
         #ifdef DEBUG
@@ -406,10 +407,10 @@ void ArduMenu<T>::enter(int16_t min, int16_t max) {
       }
       
       // Set top menu as current menu (if exists) and reset variables
-      if (_currentMenuTable[_currentMenuItemIdx].subItems != NULL) {
-        _currentMenuTable = _currentMenuTable[_currentMenuItemIdx].subItems;
+      if (currentMenuTable[currentMenuItemIdx].subItems != NULL) {
+        currentMenuTable = currentMenuTable[currentMenuItemIdx].subItems;
         _itemsOffset = 0;
-        _currentMenuItemIdx = 0;
+        currentMenuItemIdx = 0;
         _baseOffset = 0;
         _oldMenuTable = NULL;
         _oldMenuItemIdx = NULL;
@@ -465,7 +466,7 @@ void ArduMenu<T>::_cleanUp() {
   #ifdef _ADAFRUIT_PCD8544_H
   _display.clearDisplay();
   #endif
-  #ifdef _ADAFRUIT_ST7735H_
+  #if defined(_ADAFRUIT_ST7735H_)||defined(_ADAFRUIT_ST7789H_)
   _display.fillScreen(WHITE);
   #endif
 }
@@ -479,32 +480,32 @@ void ArduMenu<T>::_drawMenuItem(uint8_t i) {
   #else
   snprintf_P(format, 14, PSTR(" %%-%d.%ds "), _screen_columns - 2, _screen_columns - 2);
   #endif
-  uint8_t len = strlen_P(_currentMenuTable[i].text);
+  uint8_t len = strlen_P(currentMenuTable[i].text);
   char txt[len + 1];
-  memcpy_P(txt, _currentMenuTable[i].text, len);
+  memcpy_P(txt, currentMenuTable[i].text, len);
 
-  if (_currentMenuTable[i].type == AM_ITEM_TYPE_HEADER) {
+  if (currentMenuTable[i].type == AM_ITEM_TYPE_HEADER) {
     char * tmpText = _centerText(txt, _screen_columns - 2);
     snprintf(text, _screen_columns + 1, format, tmpText);
     delete [] tmpText;
     _baseOffset = 1;
-    if (_currentMenuItemIdx == 0) {
-      _currentMenuItemIdx = 1;
+    if (currentMenuItemIdx == 0) {
+      currentMenuItemIdx = 1;
     }
   }
   else {
     snprintf(text, _screen_columns + 1, format, txt);
   }
 
-  if (_currentMenuTable[i].type == AM_ITEM_TYPE_HEADER) {
+  if (currentMenuTable[i].type == AM_ITEM_TYPE_HEADER) {
     _display.setTextColor(BLACK, WHITE);
     text[_screen_columns - 1] = 4;
     text[0] = 4;
   }
-  else if (_selectionMode == AM_SELECTION_MODE_INVERTED && i == (_currentMenuItemIdx)) {
+  else if (_selectionMode == AM_SELECTION_MODE_INVERTED && i == (currentMenuItemIdx)) {
     _display.setTextColor(WHITE, BLACK);
   }
-  else if (_selectionMode == AM_SELECTION_MODE_ICON && i == (_currentMenuItemIdx)) {
+  else if (_selectionMode == AM_SELECTION_MODE_ICON && i == (currentMenuItemIdx)) {
     _display.setTextColor(BLACK, WHITE);
     text[0] = _selectionIcon;
   }
@@ -512,11 +513,11 @@ void ArduMenu<T>::_drawMenuItem(uint8_t i) {
     _display.setTextColor(BLACK, WHITE);
   }
 
-  if (_currentMenuTable[i].type == AM_ITEM_TYPE_MENU) {
+  if (currentMenuTable[i].type == AM_ITEM_TYPE_MENU) {
     text[_screen_columns - 1] = 175;
   }
-  else if (_currentMenuTable[i].type == AM_ITEM_TYPE_TOGGLE) {
-    if ((*_currentMenuTable[i].toggleManage)(false)) {
+  else if (currentMenuTable[i].type == AM_ITEM_TYPE_TOGGLE) {
+    if ((*currentMenuTable[i].toggleManage)(false)) {
       text[_screen_columns - 1] = 7;
     }
     else {
@@ -556,11 +557,33 @@ void ArduMenu<T>::_setRangeMetter(uint8_t num) {
   Serial.print(F("Draw lines: "));
   Serial.println(num);
   #endif
-  _display.setCursor(_boxColumnsXMargin, _boxLinesYMargin + (_letterH * (_boxLines / 2 + 1)));
-  for (int i = 0; i < num; i++) {
+  uint8_t fullBoxes = 0;
+  uint8_t emptyBoxes = 0;
+  uint16_t startPosition = 0; 
+
+  if (_rangeStatusLevel == -1) {
+    fullBoxes = num;
+    emptyBoxes = _boxColumns - num;
+    startPosition = _boxColumnsXMargin;
+  }
+  else {
+    if (num > _rangeStatusLevel) {
+      startPosition = _rangeStatusLevel * _letterW;
+      fullBoxes = num - _rangeStatusLevel;
+      emptyBoxes = 0;
+    }
+    else if (num < _rangeStatusLevel) {
+      startPosition = num * _letterW;
+      fullBoxes = 0;
+      emptyBoxes = _rangeStatusLevel - num;
+    }
+  }
+
+  _display.setCursor(startPosition, _boxLinesYMargin + (_letterH * (_boxLines / 2 + 1)));
+  for (int i = 0; i < fullBoxes; i++) {
     _display.write(220);
   }
-  for (int i = 0; i < (_boxColumns - num); i++) {
+  for (int i = 0; i < emptyBoxes; i++) {
     _display.write(219);
   }
 }

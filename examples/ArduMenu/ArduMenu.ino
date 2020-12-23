@@ -42,7 +42,7 @@ int whiteLedRangeOnExit(int8_t);
 //   up: On menu will select the previous item. On range will call the callback function with -1 as argument.
 //   enter: Select the current menu item. On AM_ITEM_TYPE_COMMAND and AM_ITEM_TYPE_EOM, callback function will be called. On AM_ITEM_TYPE_COMMAND if the callback function returns true, the top menu will be drawn.
 //                                        On AM_ITEM_TYPE_MENU the SubItems menu will be shown.
-//                                        On AM_ITEM_TYPE_RANGE, a range box will be shown. The callback function will be called with 0 as argument to retreive the current status. On exit function callback will be called with 2 as argument.
+//                                        On AM_ITEM_TYPE_RANGE, a range box will be shown. The callback function will be called with 0 as argument to retreive the current status. On exit function callback will be called with 32767 as argument.
 //                                        On AM_ITEM_TYPE_TOGGLE, the callback function will be called with true as argument, and the returned bool will be used to redraw the icon.
 //   setSelectionMode: Se the selection mode between AM_SELECTION_MODE_ICON and AM_SELECTION_MODE_INVERTED. AM_SELECTION_MODE_ICON accepts a second argument, that allows to change the char used as icon.
 //   setTextSize: Sets the menu text size (default 1).
@@ -175,7 +175,7 @@ void setup()
 
   // Blue led dim on set (Range)
   // This function is similar to real time function, but this one only sets the led
-  // bright when 2 is received as argument (On range Exit).
+  // bright when 32767 is received as argument (On range Exit).
   delay(1000);
   menuObject->down();
   delay(1000);
@@ -187,7 +187,7 @@ void setup()
     menuObject->up(0, 255);
   }
   delay(1000);
-  // Sets the current value as acepted to call the function with 2 as argument
+  // Sets the current value as acepted to call the function with 32767 as argument
   menuObject->enter();
   delay(1000);
   // Enter in range option to change it again
@@ -199,7 +199,7 @@ void setup()
     menuObject->down(0, 255);
   }
   delay(1000);
-  // As above, this enter will call the callback function with 2 as argument
+  // As above, this enter will call the callback function with 32767 as argument
   menuObject->enter();
 
   // Go down to exit function, which is called "All Off" in the example
@@ -266,7 +266,7 @@ int whiteLedRangeOnExit(int8_t mode)
       whiteLedStatus = 0;
     }
   }
-  if (mode == 2)
+  if (mode == 32767)
   {
     analogWrite(WHITELED, whiteLedStatus);
   }

@@ -49,24 +49,24 @@ class ArduMenu {
 
     // Public variables
     bool inRange = false;
+    uint8_t currentMenuItemIdx = 0;
+    MENU_ITEM *currentMenuTable;
 
     // Public functions
     void drawMenu();
-    void down(int16_t = NULL, int16_t = NULL);
-    void up(int16_t = NULL, int16_t = NULL);
+    void down(int16_t = NULL, int16_t = NULL, uint16_t = 1);
+    void up(int16_t = NULL, int16_t = NULL, uint16_t = 1);
     void enter(int16_t = NULL, int16_t = NULL);
     void setSelectionMode(uint8_t, char icon = 16);
     void setTextSize(uint8_t);
 
   protected:
     // Protected variables
-    uint8_t _currentMenuItemIdx = 0;
     uint8_t _itemsOffset = 0;
     uint8_t _baseOffset = 0;
     uint8_t _oldMenuItemIdx = NULL;
     uint8_t _oldItemsOffset = 0;
     uint8_t _oldBaseOffset = 0;
-    MENU_ITEM *_currentMenuTable;
     MENU_ITEM *_oldMenuTable = NULL;
     bool _inDisabled = false;
     uint8_t _boxWidth;
@@ -84,6 +84,7 @@ class ArduMenu {
     uint8_t _screen_lines;
     char _selectionIcon = 16;
     uint8_t _selectionMode = AM_SELECTION_MODE_ICON;
+    int8_t _rangeStatusLevel = -1;
     T _display;
 
     // Protected functions

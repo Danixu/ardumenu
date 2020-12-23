@@ -35,6 +35,11 @@ To see how to use it, just go to examples folder and check the project/s
 * Configurable colours for tft displays
 
 ## Changelog
+### 1.3.0
+- Now currentMenuItemIdx and currentMenuTable are public to detect in which menu and item we are.
+- Now range selection is faster.
+- Now is also compatible with ST7789
+
 ### 1.2.0
 - Rewritten some parts to save about 2k of Program Memory
 
