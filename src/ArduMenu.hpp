@@ -238,6 +238,7 @@ void ArduMenu<T>::enter(int16_t min, int16_t max) {
           uint8_t len = strlen_P(currentMenuTable[currentMenuItemIdx].disabledText);
           char txt[len + 1];
           memcpy_P(txt, currentMenuTable[currentMenuItemIdx].disabledText, len);
+          txt[len] = '\0';
           char * tmpText = _centerText(txt, _boxColumns);
           _display.print(tmpText);
           delete [] tmpText;
@@ -465,8 +466,14 @@ template <class T>
 void ArduMenu<T>::_cleanUp() {
   #ifdef _ADAFRUIT_PCD8544_H
   _display.clearDisplay();
+  #ifdef DEBUG
+  Serial.println(F("Clearing PCD8544"));
+  #endif
   #endif
   #if defined(_ADAFRUIT_ST7735H_)||defined(_ADAFRUIT_ST7789H_)
+  #ifdef DEBUG
+  Serial.println(F("Clearing ST7735|ST7789"));
+  #endif
   _display.fillScreen(WHITE);
   #endif
 }
